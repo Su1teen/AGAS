@@ -52,7 +52,7 @@ type PayPalOrderResponse = {
 };
 
 function getRuntimeEnv(): RuntimeEnv {
-  const runtimeEnv = (globalThis as { __AURA_ENV__?: RuntimeEnv }).__AURA_ENV__ ?? {};
+  const runtimeEnv = (globalThis as { __AGAS_ENV__?: RuntimeEnv }).__AGAS_ENV__ ?? {};
   const processEnv = (globalThis as { process?: { env?: RuntimeEnv } }).process?.env ?? {};
   const viteEnv = import.meta.env as RuntimeEnv;
 
@@ -216,7 +216,7 @@ export const createPaypalOrder = createServerFn({ method: "POST" })
               currency_code: currency,
               value,
             },
-            description: "AURA marketplace order",
+            description: "AGAS marketplace order",
           },
         ],
       }),

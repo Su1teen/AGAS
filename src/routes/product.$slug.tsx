@@ -29,7 +29,7 @@ export const Route = createFileRoute("/product/$slug")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.product.name} · AURA` },
+      { title: `${loaderData?.product.name} · AGAS` },
       { name: "description", content: loaderData?.product.tagline },
       { property: "og:title", content: loaderData?.product.name },
       { property: "og:description", content: loaderData?.product.tagline },
@@ -223,7 +223,7 @@ function ProductPage() {
                   {[
                     { icon: Truck, t: "Доставка завтра", s: "По Астане" },
                     { icon: Wrench, t: "Бесплатный монтаж", s: "При заказе от 200 000 ₸" },
-                    { icon: ShieldCheck, t: "Гарантия 3 года", s: "Сервис Aura" },
+                    { icon: ShieldCheck, t: "Гарантия 3 года", s: "Сервис AGAS" },
                     { icon: RotateCcw, t: "Возврат 30 дней", s: "Без вопросов" },
                   ].map(({ icon: Icon, t, s }) => (
                     <div key={t} className="bg-background p-4">
@@ -373,7 +373,7 @@ function ProductPage() {
                 city: "Астана",
                 date: "12 апреля",
                 title: "Тихо и красиво",
-                text: "Долго выбирала между несколькими брендами — остановилась на Aura. Подача, упаковка, ощущение в руке — всё на уровне.",
+                text: "Долго выбирала между несколькими брендами — остановилась на AGAS. Подача, упаковка, ощущение в руке — всё на уровне.",
               },
               {
                 name: "Данияр М.",

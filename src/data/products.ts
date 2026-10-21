@@ -163,8 +163,8 @@ function productImages(primary: string, scene = lifestyleLiving) {
 const legacyProducts = [
   {
     id: "p-001",
-    slug: "aura-soundsphere-gen-2",
-    name: "Aura SoundSphere Gen 2",
+    slug: "agas-soundsphere-gen-2",
+    name: "AGAS SoundSphere Gen 2",
     collection: "Sound 01",
     tagline: "Сферическая акустика для спокойных вечеров",
     description:
@@ -185,7 +185,7 @@ const legacyProducts = [
         title: "Иммерсивный звук",
         text: "Шесть драйверов и пространственная калибровка по комнате.",
       },
-      { title: "Голос и сцены", text: "Интеграция с Alice, Apple Home и сценариями Aura." },
+      { title: "Голос и сцены", text: "Интеграция с Alice, Apple Home и сценариями AGAS." },
       { title: "Бесшумная работа", text: "Пассивное охлаждение и матовый корпус без вибраций." },
     ],
     compatibility: ["Apple Home", "Google Home", "Alice", "Matter"],
@@ -193,8 +193,8 @@ const legacyProducts = [
   },
   {
     id: "p-002",
-    slug: "aura-omni-hub-s2",
-    name: "Aura Omni Hub S2",
+    slug: "agas-omni-hub-s2",
+    name: "AGAS Omni Hub S2",
     collection: "Core 01",
     tagline: "Центральная нервная система дома",
     description:
@@ -244,7 +244,7 @@ const legacyProducts = [
       { title: "Экономия", text: "До 30% снижения счетов за отопление." },
       { title: "Тонкий дисплей", text: "Зеркальное стекло и точная индикация." },
     ],
-    compatibility: ["Apple Home", "Matter", "Aura Cloud"],
+    compatibility: ["Apple Home", "Matter", "AGAS Cloud"],
     highlights: ["Самообучение", "−30% счетов", "Тихая работа"],
   },
   {
@@ -268,7 +268,7 @@ const legacyProducts = [
       { title: "Приватность", text: "Физическая шторка и шифрование хранилища." },
       { title: "Ночное видение", text: "Цветной режим до 0.005 люкс." },
     ],
-    compatibility: ["Apple Home Secure Video", "Aura Cloud"],
+    compatibility: ["Apple Home Secure Video", "AGAS Cloud"],
     highlights: ["4K HDR", "Локальный AI", "Шторка приватности"],
   },
   {
@@ -293,12 +293,12 @@ const legacyProducts = [
       { title: "Гостевые коды", text: "Одноразовые и временные коды для уборки и доставки." },
       { title: "Журнал событий", text: "Каждое открытие фиксируется в приложении." },
     ],
-    compatibility: ["Apple Home", "Matter", "Aura Cloud"],
+    compatibility: ["Apple Home", "Matter", "AGAS Cloud"],
     highlights: ["Биометрия", "Без проводов", "5 способов"],
   },
   {
     id: "p-006",
-    slug: "aura-motion-s1",
+    slug: "agas-motion-s1",
     name: "Датчик движения S1",
     collection: "Sense 01",
     tagline: "Точность mmWave-радара",
@@ -342,13 +342,13 @@ const legacyProducts = [
       { title: "Тактильная отдача", text: "Лёгкий haptic-отклик при касании." },
       { title: "Без батареек", text: "Питание от линии 220 В." },
     ],
-    compatibility: ["Matter", "Apple Home", "Aura Cloud"],
+    compatibility: ["Matter", "Apple Home", "AGAS Cloud"],
     highlights: ["4 сценария", "Haptic", "Стекло"],
   },
   {
     id: "p-008",
-    slug: "aura-glow-bulb",
-    name: "Aura Glow Bulb",
+    slug: "agas-glow-bulb",
+    name: "AGAS Glow Bulb",
     collection: "Light 01",
     tagline: "Лампа с естественным циклом света",
     description:
@@ -371,8 +371,8 @@ const legacyProducts = [
   },
   {
     id: "p-009",
-    slug: "aura-mini-plug",
-    name: "Aura Mini Plug",
+    slug: "agas-mini-plug",
+    name: "AGAS Mini Plug",
     collection: "Power 01",
     tagline: "Незаметная умная розетка",
     description:
@@ -395,8 +395,8 @@ const legacyProducts = [
   },
   {
     id: "p-010",
-    slug: "aura-soundsphere-mini",
-    name: "Aura SoundSphere Mini",
+    slug: "agas-soundsphere-mini",
+    name: "AGAS SoundSphere Mini",
     collection: "Sound 02",
     tagline: "Компактный голос дома",
     description:
@@ -411,7 +411,7 @@ const legacyProducts = [
     specs: { ...baseSpecs, Мощность: "40 Вт", Микрофоны: "4 шт" },
     features: [
       { title: "Чистый звук", text: "Сбалансированный профиль для голоса и музыки." },
-      { title: "Мультирум", text: "Синхронная работа с другими колонками Aura." },
+      { title: "Мультирум", text: "Синхронная работа с другими колонками AGAS." },
       { title: "Микрофоны far-field", text: "Слышит даже сквозь шум." },
     ],
     compatibility: ["Apple Home", "Alice", "Matter"],
@@ -419,7 +419,7 @@ const legacyProducts = [
   },
   {
     id: "p-011",
-    slug: "aura-climate-sense",
+    slug: "agas-climate-sense",
     name: "Climate Sense",
     collection: "Climate 03",
     tagline: "Тонкий датчик воздуха",
@@ -460,7 +460,7 @@ const legacyProducts = [
       { title: "Активная защита", text: "Прожектор и сирена 105 дБ." },
       { title: "Локальное хранилище", text: "До 1 ТБ на microSD." },
     ],
-    compatibility: ["Apple Home Secure Video", "Aura Cloud"],
+    compatibility: ["Apple Home Secure Video", "AGAS Cloud"],
     highlights: ["IP66", "1000 лм", "Сирена"],
   },
   {
@@ -489,7 +489,7 @@ const legacyProducts = [
   },
   {
     id: "p-014",
-    slug: "aura-leak-sensor",
+    slug: "agas-leak-sensor",
     name: "Датчик протечки L1",
     collection: "Sense 02",
     tagline: "Защита от воды на старте",
@@ -512,7 +512,7 @@ const legacyProducts = [
   },
   {
     id: "p-015",
-    slug: "aura-curtain-drive",
+    slug: "agas-curtain-drive",
     name: "Curtain Drive",
     collection: "Light 05",
     tagline: "Тихий мотор для штор",
@@ -536,8 +536,8 @@ const legacyProducts = [
   },
   {
     id: "p-016",
-    slug: "aura-starter-kit",
-    name: "Стартовый комплект Aura",
+    slug: "agas-starter-kit",
+    name: "Стартовый комплект AGAS",
     collection: "Kit 01",
     tagline: "Готовый сценарий для квартиры",
     description:
@@ -1693,7 +1693,7 @@ export const products: Product[] = allProductSeeds.map((product, index) => ({
   features: [
     { title: product.primaryFeature, text: product.featureText },
     {
-      title: "Сценарии Aura",
+      title: "Сценарии AGAS",
       text: "Устройство входит в подборки «вместе покупают» и объектные рекомендации.",
     },
     {

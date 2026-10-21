@@ -43,6 +43,6 @@ export const useCart = create<CartState>()(
         })),
       clear: () => set({ items: [] }),
     }),
-    { name: "aura-cart" },
+    { name: "agas-cart" },
   ),
 );

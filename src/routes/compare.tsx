@@ -7,7 +7,7 @@ import { products } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 
 export const Route = createFileRoute("/compare")({
-  head: () => ({ meta: [{ title: "Сравнение · AURA" }] }),
+  head: () => ({ meta: [{ title: "Сравнение · AGAS" }] }),
   component: ComparePage,
 });
 

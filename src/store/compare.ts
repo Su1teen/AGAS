@@ -28,6 +28,6 @@ export const useCompare = create<CompareState>()(
       clear: () => set({ ids: [] }),
       has: (productId) => get().ids.includes(productId),
     }),
-    { name: "aura-compare" },
+    { name: "agas-compare" },
   ),
 );

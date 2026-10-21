@@ -8,10 +8,10 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-10 py-20 lg:grid-cols-12">
           <div className="col-span-2 lg:col-span-4">
             <Link to="/" className="font-serif text-3xl tracking-tight">
-              AURA
+              AGAS
             </Link>
             <p className="mt-6 max-w-[34ch] text-sm text-ink-soft text-pretty">
-              Спокойная архитектура умного дома. Официальный дистрибьютор Aura Smart Systems в
+              Спокойная архитектура умного дома. Официальный дистрибьютор AGAS Smart Systems в
               Республике Казахстан.
             </p>
             <p className="mt-6 text-xs text-ink-soft">
@@ -150,7 +150,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col items-start justify-between gap-4 border-t border-border py-8 text-xs text-ink-soft md:flex-row md:items-center">
-          <span>© 2026 Aura Smart Systems · ИП «Aura KZ»</span>
+          <span>© 2026 AGAS Smart Systems · ИП «AGAS KZ»</span>
           <div className="flex flex-wrap gap-6">
             <a href="#" className="hover:text-foreground">
               Политика конфиденциальности

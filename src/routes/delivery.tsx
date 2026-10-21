@@ -3,7 +3,7 @@ import { Container } from "@/components/site/Container";
 import { TrustSignals } from "@/components/site/TrustSignals";
 
 export const Route = createFileRoute("/delivery")({
-  head: () => ({ meta: [{ title: "Доставка и оплата · AURA" }] }),
+  head: () => ({ meta: [{ title: "Доставка и оплата · AGAS" }] }),
   component: DeliveryPage,
 });
 

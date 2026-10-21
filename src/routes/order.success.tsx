@@ -3,12 +3,12 @@ import { Check } from "lucide-react";
 import { Container } from "@/components/site/Container";
 
 export const Route = createFileRoute("/order/success")({
-  head: () => ({ meta: [{ title: "Заказ оформлен · AURA" }] }),
+  head: () => ({ meta: [{ title: "Заказ оформлен · AGAS" }] }),
   component: OrderSuccessPage,
 });
 
 function OrderSuccessPage() {
-  const orderNumber = `AURA-${Math.floor(Math.random() * 90000 + 10000)}`;
+  const orderNumber = `AGAS-${Math.floor(Math.random() * 90000 + 10000)}`;
 
   return (
     <div className="py-20">

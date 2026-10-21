@@ -9,7 +9,7 @@ export const Route = createFileRoute("/subscriptions")({
   component: SubscriptionsPage,
   head: () => ({
     meta: [
-      { title: "Подписки · AURA" },
+      { title: "Подписки · AGAS" },
       { name: "description", content: "Выберите ваш уровень контроля." },
     ],
   }),

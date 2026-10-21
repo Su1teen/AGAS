@@ -15,13 +15,13 @@ import detail from "@/assets/detail-material.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AURA — Маркетплейс умного дома · Астана" },
+      { title: "AGAS — Маркетплейс умного дома · Астана" },
       {
         name: "description",
         content:
           "Освещение, акустика, климат и безопасность. Премиальные устройства умного дома с доставкой по Казахстану.",
       },
-      { property: "og:title", content: "AURA — Маркетплейс умного дома" },
+      { property: "og:title", content: "AGAS — Маркетплейс умного дома" },
     ],
   }),
   component: HomePage,
@@ -119,7 +119,7 @@ function HomePage() {
               <div className="relative overflow-hidden rounded-3xl bg-surface ring-1 ring-border">
                 <img
                   src={heroHub}
-                  alt="Aura Omni Hub S2"
+                  alt="AGAS Omni Hub S2"
                   width={1600}
                   height={1600}
                   className="aspect-square w-full object-cover"
@@ -340,7 +340,7 @@ function HomePage() {
           <SectionHeading
             eyebrow="Сервис"
             title="Спокойствие включено в стоимость"
-            description="Доставка, монтаж, гарантия и поддержка от инженеров Aura."
+            description="Доставка, монтаж, гарантия и поддержка от инженеров AGAS."
           />
           <TrustSignals />
         </Container>

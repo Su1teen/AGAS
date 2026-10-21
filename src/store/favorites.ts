@@ -19,6 +19,6 @@ export const useFavorites = create<FavoritesState>()(
         })),
       has: (productId) => get().ids.includes(productId),
     }),
-    { name: "aura-favorites" },
+    { name: "agas-favorites" },
   ),
 );

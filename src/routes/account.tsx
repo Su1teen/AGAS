@@ -3,7 +3,7 @@ import { Container } from "@/components/site/Container";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "Профиль · AURA" }] }),
+  head: () => ({ meta: [{ title: "Профиль · AGAS" }] }),
   component: AccountLayout,
 });
 

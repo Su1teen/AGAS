@@ -9,8 +9,8 @@ import { formatPrice } from "@/lib/format";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Корзина · AURA" },
-      { name: "description", content: "Ваш заказ в Aura — спокойный путь к оформлению." },
+      { title: "Корзина · AGAS" },
+      { name: "description", content: "Ваш заказ в AGAS — спокойный путь к оформлению." },
     ],
   }),
   component: CartPage,

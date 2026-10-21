@@ -75,14 +75,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AURA — Маркетплейс умного дома" },
+      { title: "AGAS — Маркетплейс умного дома" },
       {
         name: "description",
         content:
           "Премиальный маркетплейс устройств умного дома в Казахстане: освещение, акустика, климат, безопасность.",
       },
-      { name: "author", content: "Aura Smart Systems" },
-      { property: "og:title", content: "AURA — Маркетплейс умного дома" },
+      { name: "author", content: "AGAS Smart Systems" },
+      { property: "og:title", content: "AGAS — Маркетплейс умного дома" },
       {
         property: "og:description",
         content: "Спокойная архитектура умного дома. Доставка по Казахстану.",

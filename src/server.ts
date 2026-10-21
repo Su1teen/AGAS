@@ -69,7 +69,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      (globalThis as { __AURA_ENV__?: Record<string, string | undefined> }).__AURA_ENV__ =
+      (globalThis as { __AGAS_ENV__?: Record<string, string | undefined> }).__AGAS_ENV__ =
         env as Record<string, string | undefined>;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);

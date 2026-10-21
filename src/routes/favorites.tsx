@@ -7,7 +7,7 @@ import { useFavorites } from "@/store/favorites";
 import { products } from "@/data/products";
 
 export const Route = createFileRoute("/favorites")({
-  head: () => ({ meta: [{ title: "Избранное · AURA" }] }),
+  head: () => ({ meta: [{ title: "Избранное · AGAS" }] }),
   component: FavoritesPage,
 });
 

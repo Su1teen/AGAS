@@ -28,7 +28,7 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between gap-6">
           <div className="flex items-center gap-10">
             <Link to="/" className="font-serif text-2xl tracking-tight">
-              AURA
+              AGAS
             </Link>
             <nav className="hidden items-center gap-7 lg:flex">
               {navLinks.map((link) => {
@@ -132,7 +132,7 @@ export function Navbar() {
               </SheetTrigger>
               <SheetContent side="right" className="w-80 bg-background">
                 <SheetHeader>
-                  <SheetTitle className="font-serif text-2xl">AURA</SheetTitle>
+                  <SheetTitle className="font-serif text-2xl">AGAS</SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-1">
                   {navLinks.map((link) => (

@@ -60,7 +60,7 @@ export function calculateTotals(
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
-    meta: [{ title: "Оформление заказа · AURA" }],
+    meta: [{ title: "Оформление заказа · AGAS" }],
   }),
   component: CheckoutPage,
 });
@@ -156,7 +156,7 @@ function CheckoutPage() {
                       ["Имя", "Айгерим"],
                       ["Фамилия", "Касенова"],
                       ["Телефон", "+7 (___) ___ __ __"],
-                      ["Email", "you@aura.kz"],
+                      ["Email", "you@agas.kz"],
                     ].map(([l, p]) => (
                       <label key={l} className="flex flex-col gap-2">
                         <span className="text-xs text-ink-soft">{l}</span>
@@ -299,8 +299,8 @@ function CheckoutPage() {
                   <div className="mt-6 relative rounded-3xl border border-white/10 bg-surface p-8 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-md">
                     <div className="mb-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-ink-soft">
                       {payment === "card"
-                        ? "PayPal безопасно откроет защищенную форму оплаты банковской картой. Данные карты не хранятся на AURA."
-                        : "PayPal безопасно откроет оплату через PayPal или банковскую карту. Данные карты не хранятся на AURA."}
+                        ? "PayPal безопасно откроет защищенную форму оплаты банковской картой. Данные карты не хранятся на AGAS."
+                        : "PayPal безопасно откроет оплату через PayPal или банковскую карту. Данные карты не хранятся на AGAS."}
                     </div>
                     {paymentError && (
                       <div className="mb-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-600">

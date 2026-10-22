@@ -38,7 +38,7 @@ export function configFromEnv(env = process.env) {
   )
     throw Error("Некорректная конфигурация НДС или доставки");
   const seller = {
-    name: env.SELLER_NAME || "",
+    name: env.SELLER_NAME || "AGAS",
     address: env.SELLER_ADDRESS || "",
     bin: env.SELLER_BIN || "",
     bank: env.SELLER_BANK || "",
@@ -53,6 +53,7 @@ export function configFromEnv(env = process.env) {
   return {
     seller,
     sellerReady,
+    allowProvisional: env.REQUIRE_SELLER_DETAILS !== "true",
     vatRate: vat,
     deliveryMinor: delivery,
     production: env.NODE_ENV === "production",
@@ -67,15 +68,23 @@ export function createApp({
   dbPath = resolve("server/data/agas.sqlite"),
   config = configFromEnv(),
   seedPath = resolve("server/catalog.seed.json"),
+  database,
+  migration,
+  seedData,
+  renderPdf = invoicePdf,
 } = {}) {
-  if (dbPath !== ":memory:") mkdirSync(dirname(dbPath), { recursive: true });
-  const db = new DatabaseSync(dbPath);
-  db.exec("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;");
-  db.exec(readFileSync(new URL("./migrations/001-platform.sql", import.meta.url), "utf8"));
+  if (!database && dbPath !== ":memory:") mkdirSync(dirname(dbPath), { recursive: true });
+  const db = database || new DatabaseSync(dbPath);
+  if (!database)
+    db.exec("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;");
+  db.exec(
+    migration ?? readFileSync(new URL("./migrations/001-platform.sql", import.meta.url), "utf8"),
+  );
   const run = (sql, ...args) => db.prepare(sql).run(...args);
   const get = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const transaction = (fn) => {
+    if (db.transactionSync) return db.transactionSync(fn);
     db.exec("BEGIN IMMEDIATE");
     try {
       const v = fn();
@@ -87,8 +96,8 @@ export function createApp({
     }
   };
   run("INSERT OR IGNORE INTO suppliers(id,name) VALUES(?,?)", "agas", "AGAS");
-  if (existsSync(seedPath)) {
-    const seeds = JSON.parse(readFileSync(seedPath, "utf8"));
+  if (seedData || existsSync(seedPath)) {
+    const seeds = seedData ?? JSON.parse(readFileSync(seedPath, "utf8"));
     transaction(() => {
       for (const p of seeds)
         run(
@@ -117,6 +126,7 @@ export function createApp({
   };
   const app = express();
   app.disable("x-powered-by");
+  if (config.trustProxy) app.set("trust proxy", config.trustProxy);
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   app.use(
     cors({
@@ -192,7 +202,8 @@ export function createApp({
   app.get("/api/fx", async (req, res) => res.json(await exchangeRate()));
   app.get("/api/config", (req, res) =>
     res.json({
-      sellerReady: config.sellerReady,
+      sellerReady: config.sellerReady || Boolean(config.allowProvisional),
+      provisional: !config.sellerReady && Boolean(config.allowProvisional),
       sellerName: config.seller.name,
       deliveryMinor: config.deliveryMinor,
       vatRate: config.vatRate,
@@ -302,7 +313,7 @@ export function createApp({
         fail("Ключ запроса уже использован с другими данными", 409);
       row = previous;
     } else {
-      if (!config.sellerReady)
+      if (!config.sellerReady && !config.allowProvisional)
         fail("Продавец ещё не заполнил реквизиты для выставления счёта. Обратитесь в AGAS", 503);
       row = transaction(() => {
         const q = quote(input, lookup, config);
@@ -313,7 +324,12 @@ export function createApp({
           req.user.id,
           key,
           fingerprint,
-          JSON.stringify({ ...q, buyer: input.buyer, seller: config.seller }),
+          JSON.stringify({
+            ...q,
+            buyer: input.buyer,
+            seller: config.seller,
+            provisional: !config.sellerReady,
+          }),
         );
         for (const l of q.lines)
           run(
@@ -331,7 +347,7 @@ export function createApp({
       });
     }
     if (!get("SELECT version FROM invoice_pdfs WHERE invoice_id=?", row.id)) {
-      const pdf = await invoicePdf(invoiceData(row));
+      const pdf = await renderPdf(invoiceData(row));
       run(
         "INSERT OR IGNORE INTO invoice_pdfs(invoice_id,version,content,sha256) VALUES(?,1,?,?)",
         row.id,

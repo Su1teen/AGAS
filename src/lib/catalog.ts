@@ -53,9 +53,16 @@ export function useProducts() {
 export async function loadProduct(slug: string) {
   const legacy = products.find((p) => p.slug === slug);
   try {
-    return catalogProduct(
-      await api<CatalogItem>(`/catalog/${encodeURIComponent(legacy?.id || slug)}`),
-    );
+    const id = legacy?.id || slug;
+    const serverCatalog = (
+      globalThis as { __AGAS_PUBLIC_CATALOG__?: (id: string) => Promise<Response> }
+    ).__AGAS_PUBLIC_CATALOG__;
+    if (typeof window === "undefined" && serverCatalog) {
+      const response = await serverCatalog(id);
+      if (!response.ok) throw new Error("Товар не найден");
+      return catalogProduct(await response.json());
+    }
+    return catalogProduct(await api<CatalogItem>(`/catalog/${encodeURIComponent(id)}`));
   } catch (e) {
     if (legacy) return legacy;
     throw e;

@@ -2,6 +2,7 @@ import ExcelJS from "exceljs";
 import AdmZip from "adm-zip";
 import { parse } from "csv-parse/sync";
 import { fail, fields } from "./domain.mjs";
+import { inflateRawSync } from "node:zlib";
 
 const MAX_ROWS = 5000;
 export async function readUpload(buffer, name, sheetIndex = 0) {
@@ -31,6 +32,21 @@ export async function readUpload(buffer, name, sheetIndex = 0) {
         fail("Распакованный XLSX превышает 50 МБ");
       if (/vbaProject|externalLinks/i.test(e.entryName))
         fail("Макросы и внешние связи не поддерживаются");
+      if (!e.isDirectory) {
+        if (![0, 8].includes(e.header.method)) fail("Сжатие или шифрование XLSX не поддерживается");
+        try {
+          const compressed = e.getCompressedData();
+          const actual =
+            e.header.method === 8
+              ? inflateRawSync(compressed, {
+                  maxOutputLength: Math.min(20 * 1024 * 1024, e.header.size + 1),
+                })
+              : compressed;
+          if (actual.length !== e.header.size) fail("Некорректный размер объекта XLSX");
+        } catch {
+          fail("Некорректный или слишком большой объект XLSX");
+        }
+      }
     }
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(buffer);

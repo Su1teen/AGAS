@@ -40,7 +40,8 @@ export async function exchangeRate() {
       return cache;
     } catch {
       expires = Date.now() + 60000;
-      return cache ? { ...cache, stale: true } : null;
+      cache = cache ? { ...cache, stale: true } : null;
+      return cache;
     } finally {
       pending = null;
     }

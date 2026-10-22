@@ -48,7 +48,9 @@ export const Route = createFileRoute("/product/$slug")({
   ),
   errorComponent: ({ error }) => (
     <div className="py-32 text-center">
-      <p className="text-sm">{tr(error.message)}</p>
+      <p className="text-sm">
+        {tr(error instanceof Error ? error.message : "Не удалось выполнить действие")}
+      </p>
     </div>
   ),
   component: ProductPage,

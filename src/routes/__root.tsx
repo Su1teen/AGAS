@@ -40,7 +40,7 @@ function NotFoundComponent() {
     </div>
   );
 }
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   useUi();
   console.error(error);
   const router = useRouter();

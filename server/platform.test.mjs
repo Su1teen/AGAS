@@ -4,6 +4,8 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import ExcelJS from "exceljs";
+import AdmZip from "adm-zip";
+import { parseUsd } from "./fx.mjs";
 import { createApp, configFromEnv } from "./app.mjs";
 import { readUpload, workbook } from "./workbooks.mjs";
 import { mapRows, validateProduct } from "./domain.mjs";
@@ -82,6 +84,22 @@ const signup = (name, kind = "supplier") => ({
   company: `Компания ${name}`,
 });
 
+test("FX parser validates source date, USD units and malformed values", () => {
+  const fx = parseUsd(
+    "<rss><item><title>USD</title><pubDate>22.10.2026</pubDate><description>500,50</description><quant>1</quant></item></rss>",
+  );
+  assert.equal(fx.kztPerUsd, 500.5);
+  assert.equal(fx.asOf, "22.10.2026");
+  assert.throws(() => parseUsd("<item><title>USD</title><description>NaN</description></item>"));
+});
+test("XLSX rejects a ZIP object whose real inflated size exceeds its declared size", async () => {
+  const zip = new AdmZip();
+  zip.addFile("xl/worksheets/sheet1.xml", Buffer.alloc(100000, 65));
+  const buf = zip.toBuffer();
+  const central = buf.indexOf(Buffer.from("504b0102", "hex"));
+  buf.writeUInt32LE(1, central + 24);
+  await assert.rejects(readUpload(buf, "bad.xlsx"), /Некорректный/);
+});
 test("XLSX: sheets, hyperlinks, inline/rich strings, anchored image and 120 rows", async () => {
   const wb = new ExcelJS.Workbook();
   wb.addWorksheet("Инструкция").addRow(["Не импортировать"]);
@@ -217,6 +235,16 @@ test("end-to-end: import 121 rows, partial errors, upsert, tenant roles, invoice
     assert.equal((await analyst("/supplier/products")).data.length, 120);
     assert.equal((await customer("/supplier/products")).status, 403);
     const p = (await supplier("/supplier/products")).data.find((p) => p.sku === "SKU-0");
+    const guest = client(instance.base);
+    assert.equal((await guest("/auth/guest", {})).data.guest, true);
+    const guestInvoice = await guest(
+      "/invoices",
+      { buyer, delivery: "pickup", items: [{ productId: p.id, quantity: 1 }] },
+      { headers: { "Idempotency-Key": crypto.randomUUID() } },
+    );
+    assert.equal(guestInvoice.status, 201);
+    assert.equal((await guest(`/invoices/${guestInvoice.data.id}/pdf`)).status, 200);
+    assert.equal((await foreignBuyer(`/invoices/${guestInvoice.data.id}/pdf`)).status, 404);
     const order = {
       buyer,
       delivery: "courier",
@@ -258,9 +286,9 @@ test("end-to-end: import 121 rows, partial errors, upsert, tenant roles, invoice
       (await customer(`/invoices/${one.data.id}/email`, { email: "buyer@example.test" })).status,
       503,
     );
-    assert.equal((await supplier("/supplier/orders")).data.length, 1);
+    assert.equal((await supplier("/supplier/orders")).data.length, 2);
     assert.equal((await other("/supplier/orders")).data.length, 0);
-    assert.equal((await supplier("/supplier/analytics")).data.invoicedMinor, 600150);
+    assert.equal((await supplier("/supplier/analytics")).data.invoicedMinor, 800200);
     assert.equal(
       (
         await supplier("/supplier/leads", {

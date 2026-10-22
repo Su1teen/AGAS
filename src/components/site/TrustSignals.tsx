@@ -1,5 +1,6 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { ShieldCheck, Truck, Wrench, RotateCcw, Headphones, Lock } from "lucide-react";
-
 const items = [
   {
     icon: ShieldCheck,
@@ -14,7 +15,7 @@ const items = [
   {
     icon: Wrench,
     title: "Профессиональный монтаж",
-    text: "Сертифицированные инженеры Aura у вас дома.",
+    text: "Сертифицированные инженеры AGAS у вас дома.",
   },
   {
     icon: RotateCcw,
@@ -24,7 +25,7 @@ const items = [
   {
     icon: Lock,
     title: "Безопасная оплата",
-    text: "Kaspi, Visa, MasterCard и оплата при получении.",
+    text: "Расчёт по счёту",
   },
   {
     icon: Headphones,
@@ -32,17 +33,21 @@ const items = [
     text: "Инженер на связи в любое время суток.",
   },
 ];
-
 export function TrustSignals() {
+  useUi();
   return (
     <div className="grid grid-cols-1 gap-px overflow-hidden rounded-3xl bg-border md:grid-cols-2 lg:grid-cols-3">
-      {items.map(({ icon: Icon, title, text }) => (
-        <div key={title} className="bg-background p-8">
-          <Icon className="size-6 text-foreground" strokeWidth={1.4} />
-          <h4 className="mt-6 text-base font-medium tracking-tight text-foreground">{title}</h4>
-          <p className="mt-2 text-sm text-ink-soft text-pretty">{text}</p>
-        </div>
-      ))}
+      {tr(
+        items.map(({ icon: Icon, title, text }) => (
+          <div key={title} className="bg-background p-8">
+            <Icon className="size-6 text-foreground" strokeWidth={1.4} />
+            <h4 className="mt-6 text-base font-medium tracking-tight text-foreground">
+              {tr(title)}
+            </h4>
+            <p className="mt-2 text-sm text-ink-soft text-pretty">{tr(text)}</p>
+          </div>
+        )),
+      )}
     </div>
   );
 }

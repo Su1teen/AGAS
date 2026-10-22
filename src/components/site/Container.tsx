@@ -1,6 +1,7 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
-
 export function Container({
   children,
   className,
@@ -10,6 +11,7 @@ export function Container({
   className?: string;
   size?: "default" | "narrow" | "wide";
 }) {
+  useUi();
   return (
     <div
       className={cn(
@@ -20,7 +22,7 @@ export function Container({
         className,
       )}
     >
-      {children}
+      {tr(children)}
     </div>
   );
 }

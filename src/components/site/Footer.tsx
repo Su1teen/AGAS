@@ -1,32 +1,35 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { Link } from "@tanstack/react-router";
 import { Container } from "./Container";
-
 export function Footer() {
+  useUi();
   return (
     <footer className="mt-32 border-t border-border bg-surface">
       <Container>
         <div className="grid grid-cols-2 gap-10 py-20 lg:grid-cols-12">
           <div className="col-span-2 lg:col-span-4">
             <Link to="/" className="font-serif text-3xl tracking-tight">
-              AURA
+              AGAS
             </Link>
             <p className="mt-6 max-w-[34ch] text-sm text-ink-soft text-pretty">
-              Спокойная архитектура умного дома. Официальный дистрибьютор Aura Smart Systems в
-              Республике Казахстан.
+              {tr(
+                "Спокойная архитектура умного дома. Официальный дистрибьютор AGAS Smart Systems в Республике Казахстан.",
+              )}
             </p>
             <p className="mt-6 text-xs text-ink-soft">
-              Астана, ул. Достык, 16
+              {tr("Астана, ул. Достык, 16")}
               <br />
-              Ежедневно 10:00 — 21:00
+              {tr("Ежедневно 10:00 \u2014 21:00")}
             </p>
           </div>
 
           <div>
-            <h5 className="eyebrow">Каталог</h5>
+            <h5 className="eyebrow">{tr("Каталог")}</h5>
             <ul className="mt-6 space-y-3 text-sm text-ink-soft">
               <li>
                 <Link to="/catalog" className="transition-colors hover:text-foreground">
-                  Все товары
+                  {tr("Все товары")}
                 </Link>
               </li>
               <li>
@@ -35,7 +38,7 @@ export function Footer() {
                   params={{ slug: "lighting" }}
                   className="transition-colors hover:text-foreground"
                 >
-                  Освещение
+                  {tr("Освещение")}
                 </Link>
               </li>
               <li>
@@ -44,7 +47,7 @@ export function Footer() {
                   params={{ slug: "audio" }}
                   className="transition-colors hover:text-foreground"
                 >
-                  Акустика
+                  {tr("Акустика")}
                 </Link>
               </li>
               <li>
@@ -53,7 +56,7 @@ export function Footer() {
                   params={{ slug: "climate" }}
                   className="transition-colors hover:text-foreground"
                 >
-                  Климат
+                  {tr("Климат")}
                 </Link>
               </li>
               <li>
@@ -62,73 +65,73 @@ export function Footer() {
                   params={{ slug: "security" }}
                   className="transition-colors hover:text-foreground"
                 >
-                  Безопасность
+                  {tr("Безопасность")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h5 className="eyebrow">Сервис</h5>
+            <h5 className="eyebrow">{tr("Сервис")}</h5>
             <ul className="mt-6 space-y-3 text-sm text-ink-soft">
               <li>
                 <Link to="/delivery" className="transition-colors hover:text-foreground">
-                  Доставка и оплата
+                  {tr("Доставка и оплата")}
                 </Link>
               </li>
               <li>
                 <Link to="/support" className="transition-colors hover:text-foreground">
-                  Поддержка
+                  {tr("Поддержка")}
                 </Link>
               </li>
               <li>
                 <Link to="/support" className="transition-colors hover:text-foreground">
-                  Гарантия 3 года
+                  {tr("Гарантия 3 года")}
                 </Link>
               </li>
               <li>
                 <Link to="/support" className="transition-colors hover:text-foreground">
-                  Установка
+                  {tr("Установка")}
                 </Link>
               </li>
               <li>
                 <Link to="/support" className="transition-colors hover:text-foreground">
-                  Возврат
+                  {tr("Возврат")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h5 className="eyebrow">Аккаунт</h5>
+            <h5 className="eyebrow">{tr("Аккаунт")}</h5>
             <ul className="mt-6 space-y-3 text-sm text-ink-soft">
               <li>
                 <Link to="/account" className="transition-colors hover:text-foreground">
-                  Профиль
+                  {tr("Профиль")}
                 </Link>
               </li>
               <li>
                 <Link to="/account/orders" className="transition-colors hover:text-foreground">
-                  История заказов
+                  {tr("История заказов")}
                 </Link>
               </li>
               <li>
                 <Link to="/favorites" className="transition-colors hover:text-foreground">
-                  Избранное
+                  {tr("Избранное")}
                 </Link>
               </li>
               <li>
                 <Link to="/compare" className="transition-colors hover:text-foreground">
-                  Сравнение
+                  {tr("Сравнение")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div className="col-span-2 lg:col-span-2">
-            <h5 className="eyebrow">Письма</h5>
+            <h5 className="eyebrow">{tr("Письма")}</h5>
             <p className="mt-6 text-sm text-ink-soft text-pretty">
-              Раз в месяц — новые релизы и приватные коллекции.
+              {tr("Раз в месяц \u2014 новые релизы и приватные коллекции.")}
             </p>
             <form
               className="mt-5 flex items-center gap-2 rounded-full border border-border bg-background pl-4 pr-1.5"
@@ -136,7 +139,7 @@ export function Footer() {
             >
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={tr("Email")}
                 className="h-10 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-soft"
               />
               <button
@@ -150,13 +153,13 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col items-start justify-between gap-4 border-t border-border py-8 text-xs text-ink-soft md:flex-row md:items-center">
-          <span>© 2026 Aura Smart Systems · ИП «Aura KZ»</span>
+          <span>© 2026 AGAS</span>
           <div className="flex flex-wrap gap-6">
             <a href="#" className="hover:text-foreground">
-              Политика конфиденциальности
+              {tr("Политика конфиденциальности")}
             </a>
             <a href="#" className="hover:text-foreground">
-              Публичная оферта
+              {tr("Публичная оферта")}
             </a>
             <a href="#" className="hover:text-foreground">
               Instagram

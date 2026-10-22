@@ -91,11 +91,7 @@ function toVarName(slug) {
 
 function esc(str) {
   if (!str) return "";
-  return str
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "");
+  return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "");
 }
 
 function splitMulti(str) {
@@ -174,7 +170,7 @@ for (const csvPath of csvFiles) {
     if (!price || price <= 0) continue;
 
     let subscriptionPrice;
-    
+
     // Apply special pricing logic based on the origin CSV file
     const filename = path.basename(csvPath);
     if (filename === "DALI_Catalog_Import.csv") {

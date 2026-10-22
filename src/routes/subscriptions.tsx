@@ -1,10 +1,11 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Check, Star } from "lucide-react";
 import { Container } from "@/components/site/Container";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { cn } from "@/lib/utils";
-
 export const Route = createFileRoute("/subscriptions")({
   component: SubscriptionsPage,
   head: () => ({
@@ -14,15 +15,15 @@ export const Route = createFileRoute("/subscriptions")({
     ],
   }),
 });
-
 function SubscriptionsPage() {
+  useUi();
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
-
   const plans = [
     {
       id: "silver",
       name: "Silver",
-      gradientClass: "bg-clip-text text-transparent bg-gradient-to-r from-gray-300 via-gray-100 to-gray-400 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]",
+      gradientClass:
+        "bg-clip-text text-transparent bg-gradient-to-r from-gray-300 via-gray-100 to-gray-400 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]",
       tagline: "Базовый комфорт для квартир",
       monthly: "4 900",
       yearly: "3 900",
@@ -38,7 +39,8 @@ function SubscriptionsPage() {
     {
       id: "gold",
       name: "Gold",
-      gradientClass: "bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-600 drop-shadow-[0_0_12px_rgba(234,179,8,0.35)]",
+      gradientClass:
+        "bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-600 drop-shadow-[0_0_12px_rgba(234,179,8,0.35)]",
       tagline: "Профессиональная экосистема",
       monthly: "12 900",
       yearly: "9 900",
@@ -55,7 +57,8 @@ function SubscriptionsPage() {
     {
       id: "platinum",
       name: "Platinum",
-      gradientClass: "bg-clip-text text-transparent bg-gradient-to-r from-slate-400 via-slate-200 to-slate-600 drop-shadow-[0_0_14px_rgba(148,163,184,0.4)]",
+      gradientClass:
+        "bg-clip-text text-transparent bg-gradient-to-r from-slate-400 via-slate-200 to-slate-600 drop-shadow-[0_0_14px_rgba(148,163,184,0.4)]",
       tagline: "Инженерный максимум для бизнеса",
       monthly: "29 900",
       yearly: "23 900",
@@ -70,14 +73,13 @@ function SubscriptionsPage() {
       popular: false,
     },
   ];
-
   return (
     <div className="pb-24 pt-16 md:pb-32 md:pt-24">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <SectionHeading
             eyebrow="Уровни подписки"
-            title="Выберите ваш уровень контроля"
+            title={tr("Выберите ваш уровень контроля")}
             description="Подписка окупается при первой закупке оборудования. Доступ к закрытым ценам, инженерному сервису и расширенной гарантии."
             centered
           />
@@ -99,7 +101,7 @@ function SubscriptionsPage() {
                 billing === "monthly" ? "text-foreground" : "text-ink-soft hover:text-foreground",
               )}
             >
-              Месячная оплата
+              {tr("Месячная оплата")}
             </button>
             <button
               onClick={() => setBilling("yearly")}
@@ -108,7 +110,7 @@ function SubscriptionsPage() {
                 billing === "yearly" ? "text-foreground" : "text-ink-soft hover:text-foreground",
               )}
             >
-              Годовая оплата
+              {tr("Годовая оплата")}
               <span className="inline-flex rounded-full bg-foreground px-2 py-0.5 text-[10px] uppercase tracking-wide text-background">
                 −20%
               </span>
@@ -118,60 +120,73 @@ function SubscriptionsPage() {
 
         {/* PRICING GRID */}
         <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={cn(
-                "relative flex flex-col rounded-3xl p-8 transition-all duration-300",
-                plan.popular
-                  ? "border border-foreground/15 bg-background shadow-[inset_0_0_20px_rgba(0,0,0,0.02)] ring-1 ring-white/10 dark:border-white/20 dark:bg-surface/80 dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-xl"
-                  : "border border-border bg-surface/50",
-              )}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-foreground/10 bg-surface px-3 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-md">
-                    <Star className="size-3.5 fill-foreground text-foreground" />
-                    Популярный выбор
-                  </span>
-                </div>
-              )}
-
-              <div className="mb-6">
-                <h3 className={cn("font-serif text-3xl font-bold tracking-wide", plan.gradientClass)}>{plan.name}</h3>
-                <p className="mt-2 text-sm text-ink-soft">{plan.tagline}</p>
-              </div>
-
-              <div className="mb-8 flex items-baseline gap-2">
-                <span className="font-serif text-4xl text-foreground tabular-nums">
-                  {billing === "monthly" ? plan.monthly : plan.yearly} ₸
-                </span>
-                <span className="text-sm text-ink-soft">/ мес</span>
-              </div>
-
-              <div className="mb-8 flex-1">
-                <ul className="flex flex-col gap-4">
-                  {plan.features.map((feat, i) => (
-                    <li key={i} className="flex gap-3 text-sm text-foreground">
-                      <Check className="mt-0.5 size-4 shrink-0 text-ink-soft" />
-                      <span className="leading-snug">{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <button
+          {tr(
+            plans.map((plan) => (
+              <div
+                key={plan.id}
                 className={cn(
-                  "w-full rounded-full py-3.5 text-sm font-medium transition-all duration-300 hover:scale-[1.02]",
+                  "relative flex flex-col rounded-3xl p-8 transition-all duration-300",
                   plan.popular
-                    ? "bg-foreground text-background shadow-md hover:bg-foreground/90"
-                    : "border border-border bg-background text-foreground hover:bg-surface",
+                    ? "border border-foreground/15 bg-background shadow-[inset_0_0_20px_rgba(0,0,0,0.02)] ring-1 ring-white/10 dark:border-white/20 dark:bg-surface/80 dark:shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-xl"
+                    : "border border-border bg-surface/50",
                 )}
               >
-                {plan.cta}
-              </button>
-            </div>
-          ))}
+                {tr(
+                  plan.popular && (
+                    <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-foreground/10 bg-surface px-3 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-md">
+                        <Star className="size-3.5 fill-foreground text-foreground" />
+                        {tr("Популярный выбор")}
+                      </span>
+                    </div>
+                  ),
+                )}
+
+                <div className="mb-6">
+                  <h3
+                    className={cn(
+                      "font-serif text-3xl font-bold tracking-wide",
+                      plan.gradientClass,
+                    )}
+                  >
+                    {tr(plan.name)}
+                  </h3>
+                  <p className="mt-2 text-sm text-ink-soft">{tr(plan.tagline)}</p>
+                </div>
+
+                <div className="mb-8 flex items-baseline gap-2">
+                  <span className="font-serif text-4xl text-foreground tabular-nums">
+                    {tr(billing === "monthly" ? plan.monthly : plan.yearly)} ₸
+                  </span>
+                  <span className="text-sm text-ink-soft">{tr("/ мес")}</span>
+                </div>
+
+                <div className="mb-8 flex-1">
+                  <ul className="flex flex-col gap-4">
+                    {tr(
+                      plan.features.map((feat, i) => (
+                        <li key={i} className="flex gap-3 text-sm text-foreground">
+                          <Check className="mt-0.5 size-4 shrink-0 text-ink-soft" />
+                          <span className="leading-snug">{tr(feat)}</span>
+                        </li>
+                      )),
+                    )}
+                  </ul>
+                </div>
+
+                <button
+                  className={cn(
+                    "w-full rounded-full py-3.5 text-sm font-medium transition-all duration-300 hover:scale-[1.02]",
+                    plan.popular
+                      ? "bg-foreground text-background shadow-md hover:bg-foreground/90"
+                      : "border border-border bg-background text-foreground hover:bg-surface",
+                  )}
+                >
+                  {tr(plan.cta)}
+                </button>
+              </div>
+            )),
+          )}
         </div>
       </Container>
     </div>

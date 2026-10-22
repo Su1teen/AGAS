@@ -89,7 +89,8 @@ const images = {
   imgAqaraRelayT2: "https://www.aqara.com/wp-content/uploads/2023/07/Dual-Relay-Module-T2.png",
   imgAqaraSwitchT1: "https://www.aqara.com/wp-content/uploads/2023/04/SSM-U01-1.png",
   imgMeanWellKnx: "https://www.meanwell.com/Upload/PDF/KNX-20E-640/KNX-20E-640-spec.pdf", // placeholder
-  imgZennioMaxinbox: "https://www.zennio.com/images/productos/maxinbox-16-plus-v2/ZIO-MB16PLUSV2_front.png",
+  imgZennioMaxinbox:
+    "https://www.zennio.com/images/productos/maxinbox-16-plus-v2/ZIO-MB16PLUSV2_front.png",
   imgWirenBoard7: "https://wirenboard.com/img/catalog/wb7/wb7_main.png",
 
   philipsHueBulb:
@@ -163,7 +164,7 @@ function productImages(primary: string, scene = lifestyleLiving) {
 const legacyProducts = [
   {
     id: "p-001",
-    slug: "agas-soundsphere-gen-2",
+    slug: "aura-soundsphere-gen-2",
     name: "AGAS SoundSphere Gen 2",
     collection: "Sound 01",
     tagline: "Сферическая акустика для спокойных вечеров",
@@ -193,7 +194,7 @@ const legacyProducts = [
   },
   {
     id: "p-002",
-    slug: "agas-omni-hub-s2",
+    slug: "aura-omni-hub-s2",
     name: "AGAS Omni Hub S2",
     collection: "Core 01",
     tagline: "Центральная нервная система дома",
@@ -298,7 +299,7 @@ const legacyProducts = [
   },
   {
     id: "p-006",
-    slug: "agas-motion-s1",
+    slug: "aura-motion-s1",
     name: "Датчик движения S1",
     collection: "Sense 01",
     tagline: "Точность mmWave-радара",
@@ -347,7 +348,7 @@ const legacyProducts = [
   },
   {
     id: "p-008",
-    slug: "agas-glow-bulb",
+    slug: "aura-glow-bulb",
     name: "AGAS Glow Bulb",
     collection: "Light 01",
     tagline: "Лампа с естественным циклом света",
@@ -371,7 +372,7 @@ const legacyProducts = [
   },
   {
     id: "p-009",
-    slug: "agas-mini-plug",
+    slug: "aura-mini-plug",
     name: "AGAS Mini Plug",
     collection: "Power 01",
     tagline: "Незаметная умная розетка",
@@ -395,7 +396,7 @@ const legacyProducts = [
   },
   {
     id: "p-010",
-    slug: "agas-soundsphere-mini",
+    slug: "aura-soundsphere-mini",
     name: "AGAS SoundSphere Mini",
     collection: "Sound 02",
     tagline: "Компактный голос дома",
@@ -419,7 +420,7 @@ const legacyProducts = [
   },
   {
     id: "p-011",
-    slug: "agas-climate-sense",
+    slug: "aura-climate-sense",
     name: "Climate Sense",
     collection: "Climate 03",
     tagline: "Тонкий датчик воздуха",
@@ -489,7 +490,7 @@ const legacyProducts = [
   },
   {
     id: "p-014",
-    slug: "agas-leak-sensor",
+    slug: "aura-leak-sensor",
     name: "Датчик протечки L1",
     collection: "Sense 02",
     tagline: "Защита от воды на старте",
@@ -512,7 +513,7 @@ const legacyProducts = [
   },
   {
     id: "p-015",
-    slug: "agas-curtain-drive",
+    slug: "aura-curtain-drive",
     name: "Curtain Drive",
     collection: "Light 05",
     tagline: "Тихий мотор для штор",
@@ -536,7 +537,7 @@ const legacyProducts = [
   },
   {
     id: "p-016",
-    slug: "agas-starter-kit",
+    slug: "aura-starter-kit",
     name: "Стартовый комплект AGAS",
     collection: "Kit 01",
     tagline: "Готовый сценарий для квартиры",
@@ -1305,7 +1306,8 @@ const productSeeds: ProductSeed[] = [
     rating: 4.9,
     reviewsCount: 721,
     featured: true,
-    image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     protocols: ["Wi‑Fi"],
     functions: ["Уборка", "Wellness", "Сцены"],
     compatibility: ["Roborock", "Google Home", "Amazon Alexa", "Siri Shortcuts"],

@@ -1,8 +1,9 @@
+import { tr, useUi } from "@/lib/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Container } from "@/components/site/Container";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products } from "@/data/products";
+import { useProducts } from "@/lib/catalog";
 import { categories } from "@/data/categories";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronDown, X, ArrowLeft } from "lucide-react";
@@ -25,6 +26,8 @@ type Sort = "popular" | "price-asc" | "price-desc" | "new";
 type Budget = "all" | "under-50" | "50-150" | "150-plus";
 
 function CatalogPage() {
+  useUi();
+  const { products, loading } = useProducts();
   const [cat, setCat] = useState<string | null>(null);
   const [brand, setBrand] = useState<string | null>(null);
   const [protocol, setProtocol] = useState<string | null>(null);
@@ -33,9 +36,15 @@ function CatalogPage() {
   const [sort, setSort] = useState<Sort>("popular");
   const [inStockOnly, setInStockOnly] = useState(false);
 
-  const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), []);
-  const protocols = useMemo(() => [...new Set(products.flatMap((p) => p.protocols))].sort(), []);
-  const functions = useMemo(() => [...new Set(products.flatMap((p) => p.functions))].sort(), []);
+  const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), [products]);
+  const protocols = useMemo(
+    () => [...new Set(products.flatMap((p) => p.protocols))].sort(),
+    [products],
+  );
+  const functions = useMemo(
+    () => [...new Set(products.flatMap((p) => p.functions))].sort(),
+    [products],
+  );
 
   const list = useMemo(() => {
     let arr = [...products];
@@ -61,11 +70,12 @@ function CatalogPage() {
         arr.sort((a, b) => b.rating - a.rating);
     }
     return arr;
-  }, [brand, budget, cat, functionality, inStockOnly, protocol, sort]);
+  }, [brand, budget, cat, functionality, inStockOnly, protocol, sort, products]);
 
   const activeCategory = useMemo(() => categories.find((c) => c.slug === cat), [cat]);
 
-  const hasActiveFilters = brand || protocol || functionality || budget !== "all" || inStockOnly || sort !== "popular";
+  const hasActiveFilters =
+    brand || protocol || functionality || budget !== "all" || inStockOnly || sort !== "popular";
 
   const clearFilters = () => {
     setBrand(null);
@@ -89,9 +99,10 @@ function CatalogPage() {
                 : "border border-border bg-transparent text-ink-soft hover:text-foreground"
             }`}
           >
-            Все категории
+            {tr("Все категории")}
           </button>
           <button
+            disabled={loading}
             onClick={() => setCat("all-products")}
             className={`shrink-0 rounded-full px-5 py-2 text-sm font-medium transition-colors ${
               cat === "all-products"
@@ -99,7 +110,7 @@ function CatalogPage() {
                 : "border border-border bg-transparent text-ink-soft hover:text-foreground"
             }`}
           >
-            Все товары
+            {tr("Все товары")}
           </button>
           {categories.map((c) => (
             <button
@@ -111,7 +122,7 @@ function CatalogPage() {
                   : "border border-border bg-transparent text-ink-soft hover:text-foreground"
               }`}
             >
-              {c.shortTitle}
+              {tr(c.shortTitle)}
             </button>
           ))}
         </div>
@@ -120,12 +131,14 @@ function CatalogPage() {
           /* When NO category selected — Large Category Cards Grid */
           <div>
             <div className="mb-12 flex flex-col gap-4">
-              <span className="eyebrow">Каталог</span>
+              <span className="eyebrow">{tr("Каталог")}</span>
               <h1 className="font-serif text-5xl leading-[1.05] text-foreground md:text-6xl">
-                Все устройства AGAS
+                {tr("Все устройства AGAS")}
               </h1>
               <p className="max-w-[52ch] text-base text-ink-soft text-pretty">
-                Полный ассортимент премиальной экосистемы: устройства для дома и инфраструктура для профессиональных инсталляций.
+                {tr(
+                  "Полный ассортимент премиальной экосистемы: устройства для дома и инфраструктура для профессиональных инсталляций.",
+                )}
               </p>
             </div>
 
@@ -141,10 +154,13 @@ function CatalogPage() {
                   >
                     <div className="flex flex-col gap-2 p-6 pb-4">
                       <div className="flex items-center justify-between">
-                        <span className="eyebrow">{count} товаров</span>
+                        <span className="eyebrow">
+                          {tr(count)}
+                          {tr("товаров")}
+                        </span>
                       </div>
-                      <h3 className="font-serif text-2xl text-foreground">{category.title}</h3>
-                      <p className="text-sm text-ink-soft">{category.tagline}</p>
+                      <h3 className="font-serif text-2xl text-foreground">{tr(category.title)}</h3>
+                      <p className="text-sm text-ink-soft">{tr(category.tagline)}</p>
                     </div>
                     <div className="relative mt-auto aspect-[4/3] w-full overflow-hidden">
                       <img
@@ -167,10 +183,10 @@ function CatalogPage() {
                 className="mb-6 flex items-center gap-2 text-sm text-ink-soft transition-colors hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Все категории
+                {tr("Все категории")}
               </button>
               <h2 className="font-serif text-4xl text-foreground md:text-5xl">
-                {cat === "all-products" ? "Все товары" : activeCategory?.title}
+                {tr(cat === "all-products" ? "Все товары" : activeCategory?.title)}
               </h2>
             </div>
 
@@ -179,13 +195,15 @@ function CatalogPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-ink-soft transition-colors hover:text-foreground">
-                    {sort === "popular"
-                      ? "Сортировка"
-                      : sort === "new"
-                        ? "Сначала новые"
-                        : sort === "price-asc"
-                          ? "Сначала дешевые"
-                          : "Сначала дорогие"}
+                    {tr(
+                      sort === "popular"
+                        ? "Сортировка"
+                        : sort === "new"
+                          ? "Сначала новые"
+                          : sort === "price-asc"
+                            ? "Сначала дешевые"
+                            : "Сначала дорогие",
+                    )}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
                 </PopoverTrigger>
@@ -203,10 +221,12 @@ function CatalogPage() {
                         key={key}
                         onClick={() => setSort(key)}
                         className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                          sort === key ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                          sort === key
+                            ? "bg-surface font-medium text-foreground"
+                            : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                         }`}
                       >
-                        {label}
+                        {tr(label)}
                       </button>
                     ))}
                   </div>
@@ -216,7 +236,7 @@ function CatalogPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-ink-soft transition-colors hover:text-foreground">
-                    {brand || "Бренд"}
+                    {tr(brand || "Бренд")}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
                 </PopoverTrigger>
@@ -225,20 +245,24 @@ function CatalogPage() {
                     <button
                       onClick={() => setBrand(null)}
                       className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                        !brand ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                        !brand
+                          ? "bg-surface font-medium text-foreground"
+                          : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                       }`}
                     >
-                      Все бренды
+                      {tr("Все бренды")}
                     </button>
                     {brands.map((b) => (
                       <button
                         key={b}
                         onClick={() => setBrand(b)}
                         className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                          brand === b ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                          brand === b
+                            ? "bg-surface font-medium text-foreground"
+                            : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                         }`}
                       >
-                        {b}
+                        {tr(b)}
                       </button>
                     ))}
                   </div>
@@ -248,7 +272,7 @@ function CatalogPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-ink-soft transition-colors hover:text-foreground">
-                    {protocol || "Протокол"}
+                    {tr(protocol || "Протокол")}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
                 </PopoverTrigger>
@@ -257,20 +281,24 @@ function CatalogPage() {
                     <button
                       onClick={() => setProtocol(null)}
                       className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                        !protocol ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                        !protocol
+                          ? "bg-surface font-medium text-foreground"
+                          : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                       }`}
                     >
-                      Все протоколы
+                      {tr("Все протоколы")}
                     </button>
                     {protocols.map((p) => (
                       <button
                         key={p}
                         onClick={() => setProtocol(p)}
                         className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                          protocol === p ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                          protocol === p
+                            ? "bg-surface font-medium text-foreground"
+                            : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                         }`}
                       >
-                        {p}
+                        {tr(p)}
                       </button>
                     ))}
                   </div>
@@ -280,7 +308,7 @@ function CatalogPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-ink-soft transition-colors hover:text-foreground">
-                    {functionality || "Функция"}
+                    {tr(functionality || "Функция")}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
                 </PopoverTrigger>
@@ -289,20 +317,24 @@ function CatalogPage() {
                     <button
                       onClick={() => setFunctionality(null)}
                       className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                        !functionality ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                        !functionality
+                          ? "bg-surface font-medium text-foreground"
+                          : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                       }`}
                     >
-                      Все функции
+                      {tr("Все функции")}
                     </button>
                     {functions.map((f) => (
                       <button
                         key={f}
                         onClick={() => setFunctionality(f)}
                         className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                          functionality === f ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                          functionality === f
+                            ? "bg-surface font-medium text-foreground"
+                            : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                         }`}
                       >
-                        {f}
+                        {tr(f)}
                       </button>
                     ))}
                   </div>
@@ -312,13 +344,15 @@ function CatalogPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-ink-soft transition-colors hover:text-foreground">
-                    {budget === "all"
-                      ? "Бюджет"
-                      : budget === "under-50"
-                        ? "до 50 000 ₸"
-                        : budget === "50-150"
-                          ? "50 000–150 000 ₸"
-                          : "от 150 000 ₸"}
+                    {tr(
+                      budget === "all"
+                        ? "Бюджет"
+                        : budget === "under-50"
+                          ? "до 50 000 ₸"
+                          : budget === "50-150"
+                            ? "50 000–150 000 ₸"
+                            : "от 150 000 ₸",
+                    )}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
                 </PopoverTrigger>
@@ -336,10 +370,12 @@ function CatalogPage() {
                         key={key}
                         onClick={() => setBudget(key)}
                         className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                          budget === key ? "bg-surface font-medium text-foreground" : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
+                          budget === key
+                            ? "bg-surface font-medium text-foreground"
+                            : "text-ink-soft hover:bg-surface/50 hover:text-foreground"
                         }`}
                       >
-                        {label}
+                        {tr(label)}
                       </button>
                     ))}
                   </div>
@@ -354,7 +390,7 @@ function CatalogPage() {
                     : "border-border text-ink-soft hover:text-foreground"
                 }`}
               >
-                Только в наличии
+                {tr("Только в наличии")}
               </button>
 
               {hasActiveFilters && (
@@ -363,19 +399,19 @@ function CatalogPage() {
                   className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-accent"
                 >
                   <X className="h-4 w-4" />
-                  Сбросить
+                  {tr("Сбросить")}
                 </button>
               )}
             </div>
 
             {list.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-surface/30 py-24 text-center">
-                <p className="text-base text-ink-soft mb-4">Ничего не найдено</p>
+                <p className="text-base text-ink-soft mb-4">{tr("Ничего не найдено")}</p>
                 <button
                   onClick={clearFilters}
                   className="rounded-full bg-foreground px-6 py-2.5 text-sm font-medium text-background transition-transform hover:scale-105"
                 >
-                  Сбросить фильтры
+                  {tr("Сбросить фильтры")}
                 </button>
               </div>
             ) : (

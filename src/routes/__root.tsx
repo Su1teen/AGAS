@@ -1,3 +1,5 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -7,47 +9,49 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-
 import appCss from "../styles.css?url";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-
 function NotFoundComponent() {
+  useUi();
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
       <span className="eyebrow">404</span>
-      <h1 className="mt-4 font-serif text-6xl text-foreground">Страница не найдена</h1>
+      <h1 className="mt-4 font-serif text-6xl text-foreground">{tr("Страница не найдена")}</h1>
       <p className="mt-4 max-w-md text-sm text-ink-soft text-pretty">
-        Возможно, она была перемещена или ещё не опубликована. Вернитесь на главную или откройте
-        каталог.
+        {tr(
+          "Возможно, она была перемещена или ещё не опубликована. Вернитесь на главную или откройте каталог.",
+        )}
       </p>
       <div className="mt-8 flex gap-3">
         <Link
           to="/"
           className="inline-flex h-11 items-center rounded-full bg-foreground px-6 text-sm font-medium text-background"
         >
-          На главную
+          {tr("На главную")}
         </Link>
         <Link
           to="/catalog"
           className="inline-flex h-11 items-center rounded-full border border-border px-6 text-sm font-medium text-foreground"
         >
-          В каталог
+          {tr("В каталог")}
         </Link>
       </div>
     </div>
   );
 }
-
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
+  useUi();
   console.error(error);
   const router = useRouter();
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-      <span className="eyebrow">Ошибка</span>
-      <h1 className="mt-4 font-serif text-5xl text-foreground">Эта страница не загрузилась</h1>
+      <span className="eyebrow">{tr("Ошибка")}</span>
+      <h1 className="mt-4 font-serif text-5xl text-foreground">
+        {tr("Эта страница не загрузилась")}
+      </h1>
       <p className="mt-4 max-w-md text-sm text-ink-soft">
-        Что-то пошло не так. Попробуйте обновить или вернуться на главную.
+        {tr("Что-то пошло не так. Попробуйте обновить или вернуться на главную.")}
       </p>
       <div className="mt-8 flex gap-3">
         <button
@@ -57,20 +61,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           }}
           className="inline-flex h-11 items-center rounded-full bg-foreground px-6 text-sm font-medium text-background"
         >
-          Попробовать снова
+          {tr("Попробовать снова")}
         </button>
         <a
           href="/"
           className="inline-flex h-11 items-center rounded-full border border-border px-6 text-sm font-medium text-foreground"
         >
-          На главную
+          {tr("На главную")}
         </a>
       </div>
     </div>
   );
 }
-
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+}>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -105,22 +110,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
 function RootShell({ children }: { children: React.ReactNode }) {
+  useUi();
   return (
     <html lang="ru">
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        {tr(children)}
         <Scripts />
       </body>
     </html>
   );
 }
-
 function RootComponent() {
+  useUi();
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>

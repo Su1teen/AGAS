@@ -1,541 +1,564 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Check, ShieldCheck } from "lucide-react";
-import { FUNDING, PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { CheckCircle2, FileText, Download, ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/site/Container";
+import { PlatformAuth } from "@/components/PlatformAuth";
 import { useCart } from "@/store/cart";
-import { products } from "@/data/products";
-import type { Product } from "@/data/products";
-import { formatPrice } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import { createPaypalOrder, capturePaypalOrder } from "@/lib/paypal";
-
-// --- TYPES & HELPERS ---
-export type SubscriptionTier = "none" | "silver" | "gold" | "platinum";
-
-export function calculateTotals(
-  lines: { product: Product; item: { quantity: number; productId: string } }[],
-  tier: SubscriptionTier,
-  deliveryType: "courier" | "pickup",
-) {
-  const subtotal = lines.reduce((acc, l) => acc + l.product.price * l.item.quantity, 0);
-
-  // Guest calculations (Baseline)
-  const guestVat = subtotal * 0.16; // 16% VAT
-  const guestDelivery = deliveryType === "courier" ? subtotal * 0.1 : 0; // +10% shipping
-  const guestTotal = subtotal + guestVat + guestDelivery;
-
-  // Subscriber logic
-  let discountPercent = 0;
-  let hasFreeDelivery = false;
-
-  if (tier === "silver") {
-    discountPercent = 0.1; // 10% discount
-  } else if (tier === "gold") {
-    discountPercent = 0.15; // 15% discount
-    hasFreeDelivery = true;
-  } else if (tier === "platinum") {
-    discountPercent = 0.2; // 20% discount
-    hasFreeDelivery = true;
-  }
-
-  const subscriberDiscount = subtotal * discountPercent;
-  const finalSubtotal = subtotal - subscriberDiscount;
-  const finalVat = finalSubtotal * 0.16;
-  const finalDelivery = hasFreeDelivery || deliveryType === "pickup" ? 0 : finalSubtotal * 0.1;
-  const finalTotal = finalSubtotal + finalVat + finalDelivery;
-
-  const savings = guestTotal - finalTotal;
-
-  return {
-    baseSubtotal: subtotal,
-    vat: tier === "none" ? guestVat : finalVat,
-    delivery: tier === "none" ? guestDelivery : finalDelivery,
-    discount: subscriberDiscount,
-    total: tier === "none" ? guestTotal : finalTotal,
-    guestTotal,
-    savings,
-  };
-}
-
+import {
+  API,
+  api,
+  money,
+  useResource,
+  type User,
+  type Invoice,
+  type PlatformConfig,
+  type CatalogItem,
+} from "@/lib/platform";
 export const Route = createFileRoute("/checkout")({
-  head: () => ({
-    meta: [{ title: "Оформление заказа · AGAS" }],
-  }),
-  component: CheckoutPage,
+  head: () => ({ meta: [{ title: "Счёт на оплату · AGAS" }] }),
+  component: Checkout,
 });
-
-function CheckoutPage() {
-  const items = useCart((s) => s.items);
-  const clear = useCart((s) => s.clear);
-  const navigate = Route.useNavigate();
-
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [delivery, setDelivery] = useState<"courier" | "pickup">("courier");
-  const [payment, setPayment] = useState<"kaspi" | "card" | "paypal" | "cash">("kaspi");
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-
-  // Using a local state to let user test the 'Smart Savings' logic during checkout.
-  // In a real app, this would be fetched from user/auth store.
-  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("gold");
-
-  const lines = items
-    .map((i) => ({ item: i, product: products.find((p) => p.id === i.productId)! }))
-    .filter((l) => l.product);
-
-  const totals = calculateTotals(lines, subscriptionTier, delivery);
-  const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID ?? "sb";
-  const paypalCurrency = (import.meta.env.VITE_PAYPAL_CURRENCY ?? "USD").toUpperCase();
-  const paypalCheckoutData = {
-    items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
-    subscriptionTier,
-    deliveryType: delivery,
-  };
-
-  const steps = [
-    { n: 1, label: "Доставка" },
-    { n: 2, label: "Оплата" },
-    { n: 3, label: "Подтверждение" },
-  ];
-
-  if (lines.length === 0) {
-    return (
-      <div className="py-32 text-center">
-        <h1 className="font-serif text-4xl">Корзина пуста</h1>
-        <Link to="/catalog" className="mt-6 inline-block text-sm underline">
-          В каталог
-        </Link>
-      </div>
-    );
+const emptyBuyer = {
+  kind: "individual",
+  name: "",
+  email: "",
+  phone: "",
+  country: "KZ",
+  city: "",
+  address: "",
+  postalCode: "",
+  companyName: "",
+  bin: "",
+  bank: "",
+  iban: "",
+  bik: "",
+};
+const labels: Record<string, string> = {
+  name: "Покупатель",
+  email: "Email",
+  phone: "Телефон",
+  city: "Город",
+  address: "Адрес",
+  postalCode: "Индекс",
+  companyName: "Организация",
+  bin: "БИН",
+  bank: "Банк",
+  iban: "IBAN",
+  bik: "БИК",
+};
+function Checkout() {
+  useUi();
+  useUi();
+  const items = useCart((s) => s.items),
+    clear = useCart((s) => s.clear);
+  const [user, setUser] = useState<User | null>(null),
+    [authLoaded, setAuthLoaded] = useState(false);
+  const { data: config, error: configError } = useResource<PlatformConfig | null>("/config", null),
+    { data: catalog } = useResource<CatalogItem[]>("/catalog", []);
+  const [buyer, setBuyer] = useState(emptyBuyer),
+    [delivery, setDelivery] = useState("pickup"),
+    [review, setReview] = useState(false),
+    [quote, setQuote] = useState<Invoice | null>(null),
+    [invoice, setInvoice] = useState<Invoice | null>(null),
+    [history, setHistory] = useState<Invoice[]>([]),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false),
+    [notice, setNotice] = useState("");
+  const request = useRef<{
+    key: string;
+    body: string;
+  } | null>(null);
+  useEffect(() => {
+    api<User>("/auth/me")
+      .catch(() => api<User>("/auth/guest", { method: "POST" }))
+      .then(setUser)
+      .catch((e) => setError(e.message))
+      .finally(() => setAuthLoaded(true));
+  }, []);
+  useEffect(() => {
+    if (user) {
+      if (!user.guest)
+        setBuyer((b) => ({ ...b, name: b.name || user.name, email: b.email || user.email }));
+      api<Invoice[]>("/invoices")
+        .then(setHistory)
+        .catch((e) => setError(e.message));
+    }
+  }, [user]);
+  const body = () => ({
+    buyer: Object.fromEntries(
+      Object.entries(buyer).filter(
+        ([k, v]) =>
+          v !== "" &&
+          (buyer.kind === "company" || !["companyName", "bin", "bank", "iban", "bik"].includes(k)),
+      ),
+    ),
+    delivery,
+    items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+  });
+  async function preview(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      setQuote(await api<Invoice>("/quote", { method: "POST", body: JSON.stringify(body()) }));
+      setReview(true);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
-
+  async function issue() {
+    setBusy(true);
+    setError("");
+    const data = JSON.stringify(body());
+    try {
+      const fingerprint = Array.from(
+        new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data))),
+      )
+        .map((v) => v.toString(16).padStart(2, "0"))
+        .join("");
+      if (request.current?.body !== fingerprint) {
+        let pending: {
+          key: string;
+          body: string;
+        } | null = null;
+        try {
+          pending = JSON.parse(sessionStorage.getItem("agas-pending-invoice") || "null");
+        } catch {
+          /* Storage can be unavailable in private browsing. */
+        }
+        request.current =
+          pending?.body === fingerprint ? pending : { body: fingerprint, key: crypto.randomUUID() };
+        try {
+          sessionStorage.setItem("agas-pending-invoice", JSON.stringify(request.current));
+        } catch {
+          /* In-memory idempotency remains available. */
+        }
+      }
+      const result = await api<Invoice>("/invoices", {
+        method: "POST",
+        headers: { "Idempotency-Key": request.current!.key },
+        body: data,
+      });
+      setInvoice(result);
+      setHistory((h) => [result, ...h.filter((i) => i.id !== result.id)]);
+      try {
+        sessionStorage.removeItem("agas-pending-invoice");
+      } catch {
+        /* No persisted key. */
+      }
+      request.current = null;
+      clear();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function email(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const recipient = new FormData(e.currentTarget).get("email");
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await api(`/invoices/${invoice!.id}/email`, {
+        method: "POST",
+        body: JSON.stringify({ email: recipient }),
+      });
+      setNotice("Письмо отправлено");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  const field = (
+    key: keyof typeof buyer,
+    label: string,
+    required = true,
+    placeholder = "",
+    pattern?: string,
+  ) => (
+    <label key={key}>
+      {tr(label)}
+      <input
+        name={key}
+        value={buyer[key]}
+        onChange={(e) =>
+          setBuyer((b) => ({
+            ...b,
+            [key]: e.target.value,
+          }))
+        }
+        maxLength={key === "address" ? 400 : 200}
+        type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
+        autoComplete={
+          key === "name" ? "name" : key === "email" ? "email" : key === "phone" ? "tel" : void 0
+        }
+      />
+    </label>
+  );
   return (
-    <div className="py-12 md:py-16">
-      <Container>
-        <div className="mb-10">
-          <span className="eyebrow">Оформление</span>
-          <h1 className="mt-3 font-serif text-5xl text-foreground md:text-6xl">
-            Тихий, прозрачный заказ
-          </h1>
-        </div>
-
-        {/* STEPPER */}
-        <div className="mb-12 flex items-center gap-3">
-          {steps.map((s, i) => (
-            <div key={s.n} className="flex items-center gap-3">
-              <div
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium",
-                  step >= s.n ? "bg-foreground text-background" : "bg-surface text-ink-soft",
-                )}
-              >
-                {step > s.n ? <Check className="size-4" /> : s.n}
-              </div>
-              <span
-                className={cn(
-                  "text-sm",
-                  step >= s.n ? "text-foreground font-medium" : "text-ink-soft",
-                )}
-              >
-                {s.label}
-              </span>
-              {i < steps.length - 1 && <span className="mx-2 h-px w-10 bg-border" />}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-7">
-            {step === 1 && (
-              <div className="space-y-8">
-                <div className="rounded-3xl border border-border p-8">
-                  <h3 className="eyebrow">Получатель</h3>
-                  <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {[
-                      ["Имя", "Айгерим"],
-                      ["Фамилия", "Касенова"],
-                      ["Телефон", "+7 (___) ___ __ __"],
-                      ["Email", "you@agas.kz"],
-                    ].map(([l, p]) => (
-                      <label key={l} className="flex flex-col gap-2">
-                        <span className="text-xs text-ink-soft">{l}</span>
-                        <input
-                          placeholder={p}
-                          className="h-12 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-foreground"
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-border p-8">
-                  <h3 className="eyebrow">Способ доставки</h3>
-                  <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
-                    {(
-                      [
-                        ["courier", "Курьер по Казахстану", "2 500 ₸ · от 80 000 ₸ бесплатно"],
-                        ["pickup", "Самовывоз из шоурума", "Бесплатно · Астана, ул. Достык, 16"],
-                      ] as const
-                    ).map(([key, t, s]) => (
-                      <button
-                        key={key}
-                        onClick={() => setDelivery(key)}
-                        className={cn(
-                          "flex flex-col items-start rounded-2xl border p-5 text-left transition-colors",
-                          delivery === key
-                            ? "border-foreground bg-surface"
-                            : "border-border hover:bg-surface",
-                        )}
-                      >
-                        <span className="text-sm font-medium text-foreground">{t}</span>
-                        <span className="mt-1 text-xs text-ink-soft">{s}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {delivery === "courier" && (
-                    <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <input
-                        placeholder="Город"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-foreground md:col-span-1"
-                        defaultValue="Астана"
-                      />
-                      <input
-                        placeholder="Адрес и квартира"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-foreground md:col-span-1"
-                      />
-                    </div>
+    <Container>
+      <div className={"invoice-flow"}>
+        <Link to={"/cart"} className={"platform-link"}>
+          <ArrowLeft size={16} />
+          {tr(" Вернуться в корзину")}
+        </Link>
+        <header className={"invoice-heading"}>
+          <span className={"eyebrow"}>{tr("ЗАКАЗ И ДОКУМЕНТЫ")}</span>
+          <h1>{tr(invoice ? "Ваш счёт готов" : "Всё готово для вашего заказа")}</h1>
+          <p>{tr("Проверьте данные, получите счёт и оплатите его по реквизитам продавца.")}</p>
+        </header>
+        <ol className={"invoice-steps"}>
+          {tr(
+            ["Данные покупателя", "Проверка заказа", "Счёт на оплату"].map((s, i) => (
+              <li data-active={invoice ? true : review ? i < 2 : i === 0} key={s}>
+                <span>{tr(i + 1)}</span>
+                {tr(s)}
+              </li>
+            )),
+          )}
+        </ol>
+        {tr(
+          configError && (
+            <p className={"platform-error"} role={"alert"}>
+              {tr(configError)}
+            </p>
+          ),
+        )}
+        {tr(
+          error && (
+            <p className={"platform-error"} role={"alert"}>
+              {tr(error)}
+            </p>
+          ),
+        )}
+        {tr(
+          notice && (
+            <p className={"platform-success"} role={"status"}>
+              {tr(notice)}
+            </p>
+          ),
+        )}
+        {tr(
+          !authLoaded ? (
+            <p>{tr("Загрузка аккаунта\u2026")}</p>
+          ) : !user ? (
+            <section className="platform-panel">
+              <p>{tr("Не удалось подключиться. Попробуйте позже.")}</p>
+              <button className="platform-secondary" onClick={() => window.location.reload()}>
+                {tr("Повторить")}
+              </button>
+            </section>
+          ) : invoice ? (
+            <section className={"invoice-complete"}>
+              <CheckCircle2 size={40} />
+              <span className={"platform-badge"}>{tr("Ожидает оплаты")}</span>
+              <h2>{tr(invoice.number)}</h2>
+              <p>{tr("Заказ сохранён. Формирование счёта не подтверждает оплату.")}</p>
+              {user.guest && (
+                <p>
+                  {tr(
+                    "Счёт доступен в этом браузере. Скачайте PDF или отправьте его на email, чтобы сохранить копию.",
                   )}
-                </div>
-
-                <button
-                  onClick={() => setStep(2)}
-                  className="h-12 w-full rounded-full bg-foreground text-sm font-medium text-background md:w-auto md:px-8"
+                </p>
+              )}
+              <strong>{tr(money(invoice.totalMinor))}</strong>
+              <div className={"platform-actions"}>
+                <a
+                  className={"platform-primary"}
+                  href={`${API}/api/invoices/${invoice.id}/pdf`}
+                  target={"_blank"}
+                  rel={"noreferrer"}
                 >
-                  Перейти к оплате
+                  <FileText size={17} />
+                  {tr("Открыть / печать")}
+                </a>
+                <a
+                  className={"platform-secondary"}
+                  href={`${API}/api/invoices/${invoice.id}/pdf?download=1`}
+                >
+                  <Download size={17} />
+                  {tr("Скачать PDF")}
+                </a>
+              </div>
+              <small>
+                {tr("Печать доступна в просмотрщике PDF браузера. Версия")}
+                {tr(" ")}
+                {tr(invoice.versions.at(-1)?.version || 1)}
+                {tr(" сохранена.")}
+              </small>
+              <form onSubmit={email} className={"invoice-email"}>
+                <label>
+                  {tr("Отправить на email")}
+                  <input
+                    type={"email"}
+                    name={"email"}
+                    defaultValue={invoice.buyer.email}
+                    required={true}
+                  />
+                </label>
+                <button className={"platform-secondary"} disabled={busy || !config?.emailReady}>
+                  <Mail size={16} />
+                  {tr("Отправить")}
                 </button>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-8">
-                <div className="rounded-3xl border border-border p-8">
-                  <h3 className="eyebrow">Способ оплаты</h3>
-                  <div className="mt-6 space-y-3">
-                    {(
-                      [
-                        ["kaspi", "Kaspi", "Через Kaspi.kz · Рассрочка 0-0-12 доступна"],
-                        ["card", "Банковская карта", "Visa · MasterCard · UnionPay"],
-                        ["paypal", "PayPal", "Оплата картой или со счета PayPal"],
-                        ["cash", "При получении", "Наличными или картой курьеру"],
-                      ] as const
-                    ).map(([key, t, s]) => (
-                      <button
-                        key={key}
-                        onClick={() => setPayment(key)}
-                        className={cn(
-                          "flex w-full items-center justify-between rounded-2xl border p-5 text-left transition-colors",
-                          payment === key
-                            ? "border-foreground bg-surface"
-                            : "border-border hover:bg-surface",
+              </form>
+              {tr(
+                !config?.emailReady && (
+                  <p>{tr("Отправка писем пока недоступна. Вы можете скачать счёт.")}</p>
+                ),
+              )}
+            </section>
+          ) : items.length === 0 ? (
+            <section className={"platform-panel"}>
+              <h2>{tr("В корзине пока нет товаров")}</h2>
+              <Link to={"/catalog"} className={"platform-primary"}>
+                {tr("Выбрать товары")}
+              </Link>
+            </section>
+          ) : (
+            <div className={"invoice-grid"}>
+              <section className={"platform-panel"}>
+                {tr(
+                  !review ? (
+                    <form onSubmit={preview}>
+                      <h2>{tr("Покупатель")}</h2>
+                      <p>
+                        {tr("Данные будут перенесены в счёт. Все поля со звёздочкой обязательны.")}
+                      </p>
+                      <div className={"invoice-kind"}>
+                        {tr(
+                          [
+                            ["individual", "Физическое лицо"],
+                            ["company", "Юридическое лицо / ИП"],
+                          ].map(([k, l]) => (
+                            <button
+                              type={"button"}
+                              aria-pressed={buyer.kind === k}
+                              className={
+                                buyer.kind === k ? "platform-primary" : "platform-secondary"
+                              }
+                              onClick={() =>
+                                setBuyer((b) => ({
+                                  ...b,
+                                  kind: k,
+                                }))
+                              }
+                              key={k}
+                            >
+                              {tr(l)}
+                            </button>
+                          )),
                         )}
-                      >
-                        <div>
-                          <span className="text-sm font-medium text-foreground">{t}</span>
-                          <p className="mt-1 text-xs text-ink-soft">{s}</p>
-                        </div>
-                        <div
-                          className={cn(
-                            "h-5 w-5 rounded-full border-2",
-                            payment === key ? "border-foreground bg-foreground" : "border-border",
-                          )}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setStep(1)}
-                    className="h-12 rounded-full border border-border px-6 text-sm font-medium text-foreground"
-                  >
-                    Назад
-                  </button>
-                  <button
-                    onClick={() => setStep(3)}
-                    className="h-12 flex-1 rounded-full bg-foreground text-sm font-medium text-background md:flex-none md:px-8"
-                  >
-                    Подтвердить
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-6">
-                <div className="rounded-3xl border border-border p-8">
-                  <h3 className="eyebrow">Проверьте детали</h3>
-                  <dl className="mt-6 space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-ink-soft">Доставка</dt>
-                      <dd>{delivery === "courier" ? "Курьер" : "Самовывоз"}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-ink-soft">Оплата</dt>
-                      <dd className="capitalize">
-                        {payment === "kaspi"
-                          ? "Kaspi"
-                          : payment === "card"
-                            ? "Карта"
-                            : payment === "paypal"
-                              ? "PayPal"
-                              : "При получении"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-
-                {payment === "paypal" || payment === "card" ? (
-                  <div className="mt-6 relative rounded-3xl border border-white/10 bg-surface p-8 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-md">
-                    <div className="mb-5 rounded-2xl border border-border bg-background/70 p-4 text-sm text-ink-soft">
-                      {payment === "card"
-                        ? "PayPal безопасно откроет защищенную форму оплаты банковской картой. Данные карты не хранятся на AGAS."
-                        : "PayPal безопасно откроет оплату через PayPal или банковскую карту. Данные карты не хранятся на AGAS."}
-                    </div>
-                    {paymentError && (
-                      <div className="mb-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-600">
-                        {paymentError}
                       </div>
-                    )}
-                    <PayPalScriptProvider
-                      options={{
-                        clientId: paypalClientId,
-                        currency: paypalCurrency,
-                        intent: "capture",
-                        components: "buttons",
-                        enableFunding: "card",
+                      <div className={"invoice-fields"}>
+                        {tr(
+                          buyer.kind === "company" && (
+                            <>
+                              {tr(field("companyName", "Название организации *"))}
+                              {tr(field("bin", "БИН *", true, "12 цифр", "[0-9]{12}"))}
+                            </>
+                          ),
+                        )}
+                        {tr(field("name", "ФИО контактного лица *"))}
+                        {tr(field("email", "Электронная почта *"))}
+                        {tr(field("phone", "Телефон *", true, "+77001234567", "+7[0-9]{10}"))}
+                        {tr(field("city", "Город *"))}
+                        {tr(
+                          field(
+                            "postalCode",
+                            "Почтовый индекс *",
+                            true,
+                            "010000",
+                            "([0-9]{6}|[A-Z0-9]{7})",
+                          ),
+                        )}
+                        {tr(field("address", "Улица, дом, квартира / офис *"))}
+                        {tr(
+                          buyer.kind === "company" && (
+                            <>
+                              <h3 className={"invoice-wide"}>
+                                {tr("Банковские реквизиты покупателя (необязательно)")}
+                              </h3>
+                              {tr(field("bank", "Банк", false))}
+                              {tr(field("iban", "IBAN", false, "KZ\u2026", "KZ[A-Z0-9]{18}"))}
+                              {tr(field("bik", "БИК", false, "", "[A-Z0-9]{8}([A-Z0-9]{3})?"))}
+                            </>
+                          ),
+                        )}
+                      </div>
+                      <h2>{tr("Получение заказа")}</h2>
+                      <div className={"invoice-kind"}>
+                        {tr(
+                          [
+                            ["pickup", "Самовывоз"],
+                            ["courier", "Курьерская доставка"],
+                          ].map(([k, l]) => (
+                            <label className={"delivery-choice"} key={k}>
+                              <input
+                                type={"radio"}
+                                name={"delivery"}
+                                value={k}
+                                checked={delivery === k}
+                                onChange={() => setDelivery(k)}
+                              />
+                              <span>
+                                {tr(l)}
+                                <small>
+                                  {tr(
+                                    k === "pickup"
+                                      ? "Адрес и время согласует менеджер"
+                                      : money(config?.deliveryMinor || 0),
+                                  )}
+                                </small>
+                              </span>
+                            </label>
+                          )),
+                        )}
+                      </div>
+                      <button className={"platform-primary"} disabled={busy}>
+                        {tr(busy ? "Проверяем\u2026" : "Перейти к проверке")}
+                      </button>
+                    </form>
+                  ) : (
+                    <div>
+                      <h2>{tr("Проверьте заказ")}</h2>
+                      <dl className={"invoice-details"}>
+                        {tr(
+                          Object.entries(buyer)
+                            .filter(
+                              ([k, v]) =>
+                                v &&
+                                k !== "kind" &&
+                                k !== "country" &&
+                                (buyer.kind === "company" ||
+                                  !["companyName", "bin", "bank", "iban", "bik"].includes(k)),
+                            )
+                            .map(([k, v]) => (
+                              <div key={k}>
+                                <dt>{tr(labels[k] || k)}</dt>
+                                <dd>{tr(v)}</dd>
+                              </div>
+                            )),
+                        )}
+                      </dl>
+                      <button className={"platform-link"} onClick={() => setReview(false)}>
+                        {tr("Изменить данные")}
+                      </button>
+                      <p className={"invoice-note"}>
+                        <ShieldCheck size={20} />
+                        {tr("Цена и наличие проверены сервером. Счёт сохранится в вашем аккаунте.")}
+                      </p>
+                      {tr(
+                        !config?.sellerReady && (
+                          <p className={"platform-error"}>
+                            {tr("Продавец ещё не заполнил реквизиты для счёта. Обратитесь в AGAS.")}
+                          </p>
+                        ),
+                      )}
+                      <button
+                        className={"platform-primary"}
+                        onClick={issue}
+                        disabled={busy || !config?.sellerReady}
+                      >
+                        {tr(busy ? "Формируем PDF\u2026" : "Сформировать счёт")}
+                      </button>
+                    </div>
+                  ),
+                )}
+              </section>
+              <aside className={"platform-panel invoice-summary"}>
+                <h2>
+                  {tr("Ваш заказ ")}
+                  <span>{tr(items.length)}</span>
+                </h2>
+                {tr(
+                  items.map((i) => {
+                    const p = catalog.find((p2) => p2.id === i.productId);
+                    return (
+                      <div className={"invoice-line"} key={i.productId}>
+                        <div>
+                          <strong>{tr(p?.name || "Загружаем товар\u2026")}</strong>
+                          <small>
+                            {tr(i.quantity)}
+                            {tr(" шт. \u00B7 ")}
+                            {tr(p?.sku)}
+                          </small>
+                        </div>
+                        <b>{tr(p ? money(p.price_minor * i.quantity) : "\u2014")}</b>
+                      </div>
+                    );
+                  }),
+                )}
+                {tr(
+                  quote && review ? (
+                    <>
+                      <div className={"invoice-line"}>
+                        <span>{tr("Товары")}</span>
+                        {tr(money(quote.subtotalMinor))}
+                      </div>
+                      <div className={"invoice-line"}>
+                        <span>{tr("Доставка")}</span>
+                        {tr(money(quote.deliveryMinor))}
+                      </div>
+                      <div className={"invoice-line"}>
+                        <span>{tr(quote.vatLabel)}</span>
+                        {tr(money(quote.taxMinor))}
+                      </div>
+                      <div className={"invoice-total"}>
+                        <span>{tr("Итого")}</span>
+                        <strong>{tr(money(quote.totalMinor))}</strong>
+                      </div>
+                    </>
+                  ) : (
+                    <p className={"invoice-note"}>
+                      {tr("Итоговая сумма, доставка и НДС будут проверены на следующем шаге.")}
+                    </p>
+                  ),
+                )}
+                <small>{tr("Валюта счёта \u2014 тенге (KZT). Данные карты не требуются.")}</small>
+              </aside>
+            </div>
+          ),
+        )}
+        {tr(
+          user && history.length > 0 && (
+            <section className={"platform-panel invoice-history"}>
+              <h2>{tr("Ваши счета")}</h2>
+              {tr(
+                history.map((i) => (
+                  <div className={"invoice-line"} key={i.id}>
+                    <button
+                      className={"platform-link"}
+                      onClick={() => {
+                        setInvoice(i);
+                        setError("");
+                        setNotice("");
                       }}
                     >
-                      {payment === "paypal" && (
-                        <PayPalButtons
-                          style={{
-                            layout: "vertical",
-                            color: "silver",
-                            shape: "pill",
-                            label: "checkout",
-                          }}
-                          disabled={isPaymentProcessing}
-                          createOrder={async () => {
-                            setPaymentError(null);
-                            const order = await createPaypalOrder({ data: paypalCheckoutData });
-
-                            return order.id;
-                          }}
-                          onApprove={async (data) => {
-                            if (!data.orderID) {
-                              setPaymentError("PayPal не вернул номер заказа. Попробуйте еще раз.");
-                              return;
-                            }
-
-                            setIsPaymentProcessing(true);
-                            setPaymentError(null);
-
-                            try {
-                              await capturePaypalOrder({ data: { orderId: data.orderID } });
-                              clear();
-                              navigate({ to: "/order/success" });
-                            } catch (error) {
-                              setPaymentError(
-                                error instanceof Error
-                                  ? error.message
-                                  : "Не удалось подтвердить оплату PayPal. Попробуйте еще раз.",
-                              );
-                            } finally {
-                              setIsPaymentProcessing(false);
-                            }
-                          }}
-                          onCancel={() => {
-                            setPaymentError("Оплата PayPal была отменена.");
-                          }}
-                          onError={(error) => {
-                            setPaymentError(
-                              error instanceof Error
-                                ? error.message
-                                : "PayPal временно недоступен. Попробуйте еще раз.",
-                            );
-                          }}
-                        />
-                      )}
-                      <PayPalButtons
-                        fundingSource={FUNDING.CARD}
-                        style={{ layout: "vertical", color: "black", shape: "pill", label: "pay" }}
-                        disabled={isPaymentProcessing}
-                        createOrder={async () => {
-                          setPaymentError(null);
-                          const order = await createPaypalOrder({ data: paypalCheckoutData });
-
-                          return order.id;
-                        }}
-                        onApprove={async (data) => {
-                          if (!data.orderID) {
-                            setPaymentError("PayPal не вернул номер заказа. Попробуйте еще раз.");
-                            return;
-                          }
-
-                          setIsPaymentProcessing(true);
-                          setPaymentError(null);
-
-                          try {
-                            await capturePaypalOrder({ data: { orderId: data.orderID } });
-                            clear();
-                            navigate({ to: "/order/success" });
-                          } catch (error) {
-                            setPaymentError(
-                              error instanceof Error
-                                ? error.message
-                                : "Не удалось подтвердить оплату PayPal. Попробуйте еще раз.",
-                            );
-                          } finally {
-                            setIsPaymentProcessing(false);
-                          }
-                        }}
-                        onCancel={() => {
-                          setPaymentError("Оплата PayPal была отменена.");
-                        }}
-                        onError={(error) => {
-                          setPaymentError(
-                            error instanceof Error
-                              ? error.message
-                              : "PayPal временно недоступен. Попробуйте еще раз.",
-                          );
-                        }}
-                      />
-                    </PayPalScriptProvider>
+                      {tr(i.number)}
+                    </button>
+                    <span>{tr(money(i.totalMinor))}</span>
+                    <span className={"platform-badge"}>{tr("Ожидает оплаты")}</span>
+                    <a
+                      href={`${API}/api/invoices/${i.id}/pdf`}
+                      target={"_blank"}
+                      rel={"noreferrer"}
+                    >
+                      {tr("PDF \u2197")}
+                    </a>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      clear();
-                      navigate({ to: "/order/success" });
-                    }}
-                    className="h-12 w-full rounded-full bg-foreground text-sm font-medium text-background"
-                  >
-                    Подтвердить заказ · {formatPrice(totals.total)}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          <aside className="lg:col-span-5">
-            <div className="space-y-6 lg:sticky lg:top-24">
-              <div className="rounded-3xl border border-border bg-surface p-8">
-                <div className="flex items-center justify-between">
-                  <h3 className="eyebrow">Заказ · {lines.length} позиций</h3>
-                  <select
-                    className="text-xs border border-border rounded-md bg-transparent p-1 text-ink-soft outline-none focus:border-foreground"
-                    value={subscriptionTier}
-                    onChange={(e) => setSubscriptionTier(e.target.value as SubscriptionTier)}
-                  >
-                    <option value="none">Без подписки</option>
-                    <option value="silver">Silver</option>
-                    <option value="gold">Gold</option>
-                    <option value="platinum">Platinum</option>
-                  </select>
-                </div>
-                <ul className="mt-6 space-y-4">
-                  {lines.map(({ item, product }) => (
-                    <li key={item.productId} className="flex gap-3">
-                      <div className="h-14 w-14 overflow-hidden rounded-xl bg-background ring-1 ring-border">
-                        <img
-                          src={product.images[0]}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex flex-1 items-start justify-between gap-3 text-sm">
-                        <div>
-                          <p className="font-medium text-foreground">{product.name}</p>
-                          <p className="text-xs text-ink-soft">× {item.quantity}</p>
-                        </div>
-                        <span className="tabular-nums">
-                          {formatPrice(product.price * item.quantity)}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <dl className="mt-6 space-y-2 border-t border-border pt-6 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-ink-soft">Сумма товаров</dt>
-                    <dd className="tabular-nums">{formatPrice(totals.baseSubtotal)}</dd>
-                  </div>
-
-                  {subscriptionTier !== "none" && (
-                    <div className="flex justify-between">
-                      <dt className="text-ink-soft">Скидка ({subscriptionTier.toUpperCase()})</dt>
-                      <dd className="tabular-nums">− {formatPrice(totals.discount)}</dd>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <dt className="text-ink-soft">НДС (16%)</dt>
-                    <dd className="tabular-nums">{formatPrice(totals.vat)}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-ink-soft">Доставка (+10%)</dt>
-                    <dd className="tabular-nums">
-                      {totals.delivery === 0 ? "Бесплатно" : formatPrice(totals.delivery)}
-                    </dd>
-                  </div>
-                </dl>
-                <div className="mt-4 flex items-baseline justify-between border-t border-border pt-4">
-                  <span className="text-sm font-medium text-foreground">Итоговая сумма</span>
-                  <span className="font-serif text-2xl tabular-nums">
-                    {formatPrice(totals.total)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Smart Savings Sidebar snippet */}
-              {subscriptionTier !== "none" && totals.savings > 0 && (
-                <div className="relative rounded-3xl border border-white/10 bg-surface/80 p-8 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-md">
-                  <div className="absolute -top-3.5 left-8 flex justify-center">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-foreground/10 bg-surface px-3 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-md">
-                      <ShieldCheck className="size-3.5 fill-foreground text-foreground" />
-                      Smart Savings
-                    </span>
-                  </div>
-                  <h4 className="mt-2 font-serif text-xl text-foreground">Умная экономия</h4>
-                  <p className="mt-2 text-sm text-ink-soft leading-relaxed">
-                    Будучи участником подписки <b>{subscriptionTier.toUpperCase()}</b>, вы избегаете
-                    дополнительных наценок на доставку и получаете закрытую скидку.
-                  </p>
-
-                  <dl className="mt-5 space-y-2 border-l-2 border-foreground/10 pl-4 text-sm">
-                    <div className="flex justify-between text-ink-soft">
-                      <dt>Без подписки:</dt>
-                      <dd className="line-through">{formatPrice(totals.guestTotal)}</dd>
-                    </div>
-                    <div className="flex justify-between font-medium text-foreground">
-                      <dt>С вашей подпиской:</dt>
-                      <dd>{formatPrice(totals.total)}</dd>
-                    </div>
-                  </dl>
-
-                  <div className="mt-6 rounded-2xl bg-foreground/5 p-4 text-center">
-                    <p className="text-sm font-medium text-foreground">
-                      Ваша экономия с подпиской:
-                      <br />
-                      <span className="text-lg font-serif">{formatPrice(totals.savings)}</span>
-                    </p>
-                  </div>
-                </div>
+                )),
               )}
-            </div>
-          </aside>
-        </div>
-      </Container>
-    </div>
+            </section>
+          ),
+        )}
+      </div>
+    </Container>
   );
 }

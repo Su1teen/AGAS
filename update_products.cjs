@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const p = path.join(__dirname, 'src', 'data', 'products.ts');
-let content = fs.readFileSync(p, 'utf8');
+const p = path.join(__dirname, "src", "data", "products.ts");
+let content = fs.readFileSync(p, "utf8");
 
 // 1. Insert imports at the top
 const imports = `import imgPhilipsHue from "@/assets/philips_hue_bulb_1780415335337.png";
@@ -50,19 +50,19 @@ const imagesAdditions = `
   imgZennioMaxinbox: "https://www.zennio.com/images/productos/maxinbox-16-plus-v2/ZIO-MB16PLUSV2_front.png",
   imgWirenBoard7: "https://wirenboard.com/img/catalog/wb7/wb7_main.png",
 `;
-content = content.replace('const images = {', 'const images = {' + imagesAdditions);
+content = content.replace("const images = {", "const images = {" + imagesAdditions);
 
 // 3. Update existing Hue and Yandex items
 // For Philips Hue:
 content = content.replace(
   /slug:\s*"philips-hue-white-color-ambiance-a19",[\s\S]*?image:\s*images\.philipsHueBulb,/,
-  match => match.replace('images.philipsHueBulb', 'images.imgPhilipsHue')
+  (match) => match.replace("images.philipsHueBulb", "images.imgPhilipsHue"),
 );
 
 // For Yandex Button:
 content = content.replace(
   /slug:\s*"yandex-smart-button",[\s\S]*?image:\s*images\.yandexAlice,/,
-  match => match.replace('images.yandexAlice', 'images.imgYandexBtn')
+  (match) => match.replace("images.yandexAlice", "images.imgYandexBtn"),
 );
 
 // 4. Add 20 new products to productSeeds
@@ -550,14 +550,14 @@ const newProducts = `
 `;
 
 content = content.replace(
-  'export const productSeeds: ProductSeed[] = [',
-  'const productSeeds: ProductSeed[] = ['
+  "export const productSeeds: ProductSeed[] = [",
+  "const productSeeds: ProductSeed[] = [",
 );
 
 content = content.replace(
-  '];\n\nexport const products: Product[]',
-  ',' + newProducts + '\n];\n\nexport const products: Product[]'
+  "];\n\nexport const products: Product[]",
+  "," + newProducts + "\n];\n\nexport const products: Product[]",
 );
 
-fs.writeFileSync(p, content, 'utf8');
+fs.writeFileSync(p, content, "utf8");
 console.log("SUCCESS!");

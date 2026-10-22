@@ -1,7 +1,4 @@
-export function formatPrice(value: number): string {
-  return value.toLocaleString("ru-RU").replace(/\u00A0/g, " ") + " ₸";
-}
-
-export function formatNumber(value: number): string {
-  return value.toLocaleString("ru-RU").replace(/\u00A0/g, " ");
-}
+import { displayMoney, useUi } from "./ui";
+export const formatPrice = (value: number) => displayMoney(Math.round(value * 100));
+export const formatNumber = (value: number) =>
+  value.toLocaleString(useUi.getState().lang === "ru" ? "ru-RU" : "en-US");

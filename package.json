@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-worker.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -17,7 +17,8 @@
     "test": "node --test server/*.test.mjs",
     "test:e2e": "playwright test",
     "deploy": "wrangler deploy --config dist/server/wrangler.json",
-    "deploy:check": "wrangler deploy --dry-run --config dist/server/wrangler.json"
+    "deploy:check": "wrangler deploy --dry-run --config dist/server/wrangler.json",
+    "test:cloudflare": "node --test tests/cloudflare.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
@@ -106,7 +107,9 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.3.5",
-    "nitro": "3.0.260903-beta"
+    "nitro": "3.0.260903-beta",
+    "esbuild": "^0.28.2",
+    "wrangler": "4.151.0"
   },
   "engines": {
     "node": ">=24.0.0"

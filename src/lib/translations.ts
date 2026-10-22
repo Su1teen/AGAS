@@ -1,4 +1,8 @@
 export const english: Record<string, string> = {
+  "Проверьте заказ и получите предварительный счёт в PDF.":
+    "Review your order and get a preliminary PDF invoice.",
+  "Предварительный счёт можно скачать и распечатать. Реквизиты продавца ещё не заполнены, оплата по документу пока недоступна.":
+    "Download or print your preliminary invoice. Seller bank details are pending, so this document cannot be used for payment yet.",
   "Сначала дешевые": "Lowest price first",
   "Сначала дорогие": "Highest price first",
 

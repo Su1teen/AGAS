@@ -155,8 +155,7 @@ function CatalogPage() {
                     <div className="flex flex-col gap-2 p-6 pb-4">
                       <div className="flex items-center justify-between">
                         <span className="eyebrow">
-                          {tr(count)}
-                          {tr("товаров")}
+                          {tr(count)} {tr("товаров")}
                         </span>
                       </div>
                       <h3 className="font-serif text-2xl text-foreground">{tr(category.title)}</h3>

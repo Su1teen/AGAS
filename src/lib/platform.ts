@@ -29,6 +29,7 @@ export type CatalogItem = {
   invoiceRef?: string;
 };
 export type Invoice = {
+  provisional?: boolean;
   id: string;
   number: string;
   status: string;
@@ -51,6 +52,7 @@ export type Invoice = {
   versions: { version: number }[];
 };
 export type PlatformConfig = {
+  provisional?: boolean;
   sellerReady: boolean;
   sellerName: string;
   deliveryMinor: number;

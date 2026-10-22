@@ -1,11 +1,13 @@
 import PDFDocument from "pdfkit";
 import { fileURLToPath } from "node:url";
-const regular = fileURLToPath(new URL("./fonts/NotoSans-Regular.ttf", import.meta.url));
-const bold = fileURLToPath(new URL("./fonts/NotoSans-Bold.ttf", import.meta.url));
 const money = (n) =>
   `${(n / 100).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KZT`;
-export async function invoicePdf(invoice) {
+export async function invoicePdf(invoice, fonts) {
+  const regular =
+    fonts?.regular ?? fileURLToPath(new URL("./fonts/NotoSans-Regular.ttf", import.meta.url));
+  const bold = fonts?.bold ?? fileURLToPath(new URL("./fonts/NotoSans-Bold.ttf", import.meta.url));
   const doc = new PDFDocument({
+    font: regular,
     size: "A4",
     margin: 44,
     bufferPages: true,
@@ -23,7 +25,10 @@ export async function invoicePdf(invoice) {
   const label = (s) => doc.font("Bold").fontSize(9).fillColor("#62746D").text(s).moveDown(0.6);
   doc.roundedRect(44, 40, 507, 104, 12).fill("#315B80");
   doc.font("Bold").fontSize(24).fillColor("white").text("AGAS", 64, 60);
-  doc.font("Regular").fontSize(10).text("СЧЁТ НА ОПЛАТУ", 64, 99);
+  doc
+    .font("Regular")
+    .fontSize(10)
+    .text(invoice.provisional ? "ПРЕДВАРИТЕЛЬНЫЙ СЧЁТ" : "СЧЁТ НА ОПЛАТУ", 64, 99);
   doc.font("Bold").fontSize(17).text(invoice.number, 295, 64, { width: 235, align: "right" });
   doc
     .font("Regular")
@@ -40,10 +45,18 @@ export async function invoicePdf(invoice) {
   doc.moveDown(1.4);
   label("ПРОДАВЕЦ");
   doc.font("Bold").fontSize(12).fillColor("#315B80").text(invoice.seller.name);
-  doc.font("Regular").fontSize(10).fillColor("#263A32").text(invoice.seller.address);
-  doc.text(`БИН: ${invoice.seller.bin}`);
-  doc.text(`Банк: ${invoice.seller.bank}`);
-  doc.text(`IBAN: ${invoice.seller.iban}    БИК: ${invoice.seller.bik}`);
+  doc
+    .font("Regular")
+    .fontSize(10)
+    .fillColor("#263A32")
+    .text(invoice.seller.address || "Адрес уточняется");
+  doc.text(`БИН: ${invoice.seller.bin || "—"}`);
+  doc.text(`Банк: ${invoice.seller.bank || "—"}`);
+  doc.text(`IBAN: ${invoice.seller.iban || "—"}    БИК: ${invoice.seller.bik || "—"}`);
+  if (invoice.provisional)
+    doc
+      .fillColor("#9A6500")
+      .text("Реквизиты продавца не заполнены. Оплата по этому документу пока недоступна.");
   doc.moveDown(1);
   label("ПОКУПАТЕЛЬ");
   const b = invoice.buyer;

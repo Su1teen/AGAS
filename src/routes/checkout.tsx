@@ -50,7 +50,6 @@ const labels: Record<string, string> = {
 };
 function Checkout() {
   useUi();
-  useUi();
   const items = useCart((s) => s.items),
     clear = useCart((s) => s.clear);
   const [user, setUser] = useState<User | null>(null),
@@ -195,6 +194,9 @@ function Checkout() {
           }))
         }
         maxLength={key === "address" ? 400 : 200}
+        required={required}
+        placeholder={placeholder}
+        pattern={pattern}
         type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
         autoComplete={
           key === "name" ? "name" : key === "email" ? "email" : key === "phone" ? "tel" : void 0
@@ -212,7 +214,13 @@ function Checkout() {
         <header className={"invoice-heading"}>
           <span className={"eyebrow"}>{tr("ЗАКАЗ И ДОКУМЕНТЫ")}</span>
           <h1>{tr(invoice ? "Ваш счёт готов" : "Всё готово для вашего заказа")}</h1>
-          <p>{tr("Проверьте данные, получите счёт и оплатите его по реквизитам продавца.")}</p>
+          <p>
+            {tr(
+              config?.provisional
+                ? "Проверьте заказ и получите предварительный счёт в PDF."
+                : "Проверьте данные, получите счёт и оплатите его по реквизитам продавца.",
+            )}
+          </p>
         </header>
         <ol className={"invoice-steps"}>
           {tr(
@@ -224,6 +232,13 @@ function Checkout() {
             )),
           )}
         </ol>
+        {(config?.provisional || invoice?.provisional) && (
+          <p className="platform-panel" role="status">
+            {tr(
+              "Предварительный счёт можно скачать и распечатать. Реквизиты продавца ещё не заполнены, оплата по документу пока недоступна.",
+            )}
+          </p>
+        )}
         {tr(
           configError && (
             <p className={"platform-error"} role={"alert"}>

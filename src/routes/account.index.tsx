@@ -1,41 +1,38 @@
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
 import { createFileRoute } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/account/")({
-  component: AccountIndex,
-});
-
-function AccountIndex() {
+import { useResource, type User } from "@/lib/platform";
+export const Route = createFileRoute("/account/")({ component: Profile });
+function Profile() {
+  useUi();
+  const { data, error } = useResource<User | null>("/auth/me", null);
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {[
-          ["Бонусы Aura", "12 400 ₸"],
-          ["Заказов", "8"],
-          ["Статус", "Aura Insider"],
-        ].map(([t, v]) => (
-          <div key={t} className="rounded-3xl border border-border bg-surface p-6">
-            <span className="eyebrow">{t}</span>
-            <p className="mt-3 font-serif text-3xl text-foreground">{v}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-3xl border border-border p-8">
-        <h3 className="eyebrow">Контактные данные</h3>
-        <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-          {[
-            ["Имя", "Айгерим Касенова"],
-            ["Email", "aigerim@aura.kz"],
-            ["Телефон", "+7 707 000 12 34"],
-            ["Город", "Астана"],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between border-b border-border py-3 text-sm">
-              <dt className="text-ink-soft">{k}</dt>
-              <dd className="font-medium text-foreground">{v}</dd>
+    <section className="platform-panel">
+      <h2>{tr("Профиль")}</h2>
+      {tr(
+        error && (
+          <p className="platform-error" role="alert">
+            {tr(error)}
+          </p>
+        ),
+      )}
+      {tr(
+        data && (
+          <dl className="invoice-details">
+            <div>
+              <dt>{tr("Имя")}</dt>
+              <dd>{tr(data.name)}</dd>
             </div>
-          ))}
-        </dl>
-      </div>
-    </div>
+            <div>
+              <dt>Email</dt>
+              <dd>{tr(data.email)}</dd>
+            </div>
+          </dl>
+        ),
+      )}
+      <p className="invoice-note">
+        {tr("Данные получателя и адрес можно указать для каждого заказа при формировании счёта.")}
+      </p>
+    </section>
   );
 }

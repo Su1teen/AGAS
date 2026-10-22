@@ -1,66 +1,55 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { formatPrice } from "@/lib/format";
-
-export const Route = createFileRoute("/account/orders")({
-  component: OrdersPage,
-});
-
-const orders = [
-  {
-    id: "AURA-42081",
-    date: "12 апреля 2026",
-    status: "Доставлено",
-    total: 462000,
-    items: ["Aura SoundSphere Gen 2", "Tactile Light Module ×2"],
-  },
-  {
-    id: "AURA-41902",
-    date: "28 марта 2026",
-    status: "В пути",
-    total: 215000,
-    items: ["Aether Bolt"],
-  },
-  {
-    id: "AURA-41750",
-    date: "5 февраля 2026",
-    status: "Доставлено",
-    total: 86500,
-    items: ["Aura Glow Bulb ×4", "Aura Mini Plug"],
-  },
-];
-
-function OrdersPage() {
+// localized-ui
+import { tr, useUi } from "@/lib/ui";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { API, money, useResource, type Invoice } from "@/lib/platform";
+export const Route = createFileRoute("/account/orders")({ component: Orders });
+function Orders() {
+  useUi();
+  const { data, error, loading } = useResource<Invoice[]>("/invoices", []);
   return (
-    <div className="space-y-4">
-      {orders.map((o) => (
-        <article
-          key={o.id}
-          className="grid grid-cols-1 gap-6 rounded-3xl border border-border p-6 md:grid-cols-[1fr_auto] md:items-center"
-        >
-          <div>
-            <div className="flex flex-wrap items-baseline gap-3">
-              <span className="font-medium text-foreground">{o.id}</span>
-              <span
-                className={
-                  o.status === "Доставлено"
-                    ? "rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-foreground"
-                    : "rounded-full bg-foreground px-2.5 py-0.5 text-[11px] font-medium text-background"
-                }
+    <section className="platform-panel">
+      <h2>{tr("Заказы и счета")}</h2>
+      {tr(
+        error && (
+          <p className="platform-error" role="alert">
+            {tr(error)}
+          </p>
+        ),
+      )}
+      {tr(
+        loading ? (
+          <p>{tr("Загрузка\u2026")}</p>
+        ) : data.length ? (
+          data.map((i) => (
+            <article key={i.id} className="invoice-line">
+              <div>
+                <strong>{tr(i.number)}</strong>
+                <small>
+                  {tr(new Date(i.createdAt).toLocaleDateString("ru-RU"))} ·{" "}
+                  {tr(i.lines.map((l) => `${l.name} × ${l.quantity}`).join(", "))}
+                </small>
+              </div>
+              <span>{tr(money(i.totalMinor))}</span>
+              <span className="platform-badge">{tr("Ожидает оплаты")}</span>
+              <a
+                className="platform-link"
+                href={`${API}/api/invoices/${i.id}/pdf`}
+                target="_blank"
+                rel="noreferrer"
               >
-                {o.status}
-              </span>
-              <span className="text-xs text-ink-soft">{o.date}</span>
-            </div>
-            <p className="mt-2 text-sm text-ink-soft">{o.items.join(" · ")}</p>
-          </div>
-          <div className="flex items-center gap-6">
-            <span className="font-serif text-2xl tabular-nums">{formatPrice(o.total)}</span>
-            <button className="rounded-full border border-border px-4 py-2 text-xs font-medium hover:bg-surface">
-              Повторить
-            </button>
-          </div>
-        </article>
-      ))}
-    </div>
+                {tr("Открыть PDF \u2197")}
+              </a>
+            </article>
+          ))
+        ) : (
+          <p>{tr("Пока нет сохранённых заказов.")}</p>
+        ),
+      )}
+      <div className="platform-actions">
+        <Link to="/checkout" className="platform-secondary">
+          {tr("Счета и отправка по email")}
+        </Link>
+      </div>
+    </section>
   );
 }

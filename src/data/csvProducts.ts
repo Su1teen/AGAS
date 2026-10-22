@@ -50,7 +50,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Главный контроллер (Master) DALI",
-    description: "Центральное устройство для адресации и управления всей DALI-сетью. Позволяет настраивать группы и сцены через ПО.",
+    description:
+      "Центральное устройство для адресации и управления всей DALI-сетью. Позволяет настраивать группы и сцены через ПО.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -74,7 +75,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Сенсорная панель управления DALI",
-    description: "Стильная настенная панель для управления DALI-шиной. Поддерживает контроль яркости, цветовой температуры и запуск сценариев.",
+    description:
+      "Стильная настенная панель для управления DALI-шиной. Поддерживает контроль яркости, цветовой температуры и запуск сценариев.",
     category: "control",
     categoryLabel: "Управление",
     subcategory: "wired-panels",
@@ -98,7 +100,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Главный контроллер (Master) DALI",
-    description: "Центральное устройство для адресации и управления всей DALI-сетью. Позволяет настраивать группы и сцены через ПО.",
+    description:
+      "Центральное устройство для адресации и управления всей DALI-сетью. Позволяет настраивать группы и сцены через ПО.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -122,7 +125,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Главный контроллер (Master) DALI",
-    description: "Центральное устройство для адресации и управления всей DALI-сетью. Позволяет настраивать группы и сцены через ПО.",
+    description:
+      "Центральное устройство для адресации и управления всей DALI-сетью. Позволяет настраивать группы и сцены через ПО.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -146,7 +150,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Сенсорная панель управления DALI",
-    description: "Стильная настенная панель для управления DALI-шиной. Поддерживает контроль яркости, цветовой температуры и запуск сценариев.",
+    description:
+      "Стильная настенная панель для управления DALI-шиной. Поддерживает контроль яркости, цветовой температуры и запуск сценариев.",
     category: "control",
     categoryLabel: "Управление",
     subcategory: "wired-panels",
@@ -170,7 +175,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-GW-TDA обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-GW-TDA обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -194,7 +200,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400PS обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400PS обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -218,7 +225,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400P обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400P обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -242,7 +250,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400PEA обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400PEA обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -266,7 +275,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400AMP обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400AMP обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -290,7 +300,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400BRC обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2400BRC обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -314,7 +325,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2303S обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2303S обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -338,7 +350,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Умный LED драйвер с настройкой по NFC",
-    description: "Программируемый блок питания для светодиодного освещения. Позволяет точно задавать выходной ток с помощью смартфона через NFC без подключения к сети.",
+    description:
+      "Программируемый блок питания для светодиодного освещения. Позволяет точно задавать выходной ток с помощью смартфона через NFC без подключения к сети.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -362,7 +375,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2316B обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2316B обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -386,7 +400,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2318B обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2318B обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -410,7 +425,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Профессиональное управление освещением",
-    description: "Высококачественное устройство Sunricher для систем DALI. Модель SR-2304NP обеспечивает надежную и бесперебойную работу вашего умного дома.",
+    description:
+      "Высококачественное устройство Sunricher для систем DALI. Модель SR-2304NP обеспечивает надежную и бесперебойную работу вашего умного дома.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "dali-masters",
@@ -434,7 +450,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · DALI",
     tagline: "Конвертер интерфейсов DALI",
-    description: "Интеграционный модуль для преобразования сигналов DALI в другие стандарты (например, 0-10V или PWM) или наоборот.",
+    description:
+      "Интеграционный модуль для преобразования сигналов DALI в другие стандарты (например, 0-10V или PWM) или наоборот.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "protocol-converters",
@@ -458,7 +475,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Универсальный многоканальный LED контроллер",
-    description: "Мультиформатный модуль для LED лент. Поддерживает режимы DIM, CCT, RGBW и RGB+CCT. Работает в стабильной Mesh-сети.",
+    description:
+      "Мультиформатный модуль для LED лент. Поддерживает режимы DIM, CCT, RGBW и RGB+CCT. Работает в стабильной Mesh-сети.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "pwm-controllers",
@@ -473,7 +491,8 @@ export const csvProductSeeds: ProductSeed[] = [
     compatibility: ["Sunricher 2.4G Ecosystem", "Homeelife App"],
     sourceUrl: "https://www.sunricher.com",
     primaryFeature: "Режим 4-в-1",
-    featureText: "Подстраивается под любой тип светодиодной ленты с помощью встроенных DIP-переключателей.",
+    featureText:
+      "Подстраивается под любой тип светодиодной ленты с помощью встроенных DIP-переключателей.",
   },
   {
     slug: "sunricher-sr-sb9101ea-5c",
@@ -482,7 +501,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Универсальный многоканальный LED контроллер",
-    description: "Мультиформатный модуль для LED лент. Поддерживает режимы DIM, CCT, RGBW и RGB+CCT. Работает в стабильной Mesh-сети.",
+    description:
+      "Мультиформатный модуль для LED лент. Поддерживает режимы DIM, CCT, RGBW и RGB+CCT. Работает в стабильной Mesh-сети.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "pwm-controllers",
@@ -497,7 +517,8 @@ export const csvProductSeeds: ProductSeed[] = [
     compatibility: ["Sunricher 2.4G Ecosystem", "Homeelife App"],
     sourceUrl: "https://www.sunricher.com",
     primaryFeature: "Режим 4-в-1",
-    featureText: "Подстраивается под любой тип светодиодной ленты с помощью встроенных DIP-переключателей.",
+    featureText:
+      "Подстраивается под любой тип светодиодной ленты с помощью встроенных DIP-переключателей.",
   },
   {
     slug: "sunricher-sr-sb9101cs",
@@ -506,7 +527,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Контроллер умного освещения",
-    description: "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
+    description:
+      "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "pwm-controllers",
@@ -530,7 +552,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Универсальный многоканальный LED контроллер",
-    description: "Мультиформатный модуль для LED лент. Поддерживает режимы DIM, CCT, RGBW и RGB+CCT. Работает в стабильной Mesh-сети.",
+    description:
+      "Мультиформатный модуль для LED лент. Поддерживает режимы DIM, CCT, RGBW и RGB+CCT. Работает в стабильной Mesh-сети.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "pwm-controllers",
@@ -545,7 +568,8 @@ export const csvProductSeeds: ProductSeed[] = [
     compatibility: ["Sunricher 2.4G Ecosystem", "Homeelife App"],
     sourceUrl: "https://www.sunricher.com",
     primaryFeature: "Режим 4-в-1",
-    featureText: "Подстраивается под любой тип светодиодной ленты с помощью встроенных DIP-переключателей.",
+    featureText:
+      "Подстраивается под любой тип светодиодной ленты с помощью встроенных DIP-переключателей.",
   },
   {
     slug: "sunricher-sr-sb1029s-dim-sensor",
@@ -554,7 +578,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Датчик движения и освещенности",
-    description: "Мультисенсор для потолочного или накладного монтажа. Анализирует уровень света и присутствие, экономя электроэнергию.",
+    description:
+      "Мультисенсор для потолочного или накладного монтажа. Анализирует уровень света и присутствие, экономя электроэнергию.",
     category: "security",
     categoryLabel: "Безопасность",
     subcategory: "sensors",
@@ -578,7 +603,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Центральный шлюз умного дома",
-    description: "Мост для подключения локальных устройств 2.4G Mesh к облачным сервисам. Позволяет управлять домом через интернет и голосовых помощников (Яндекс Алиса, Google Home).",
+    description:
+      "Мост для подключения локальных устройств 2.4G Mesh к облачным сервисам. Позволяет управлять домом через интернет и голосовых помощников (Яндекс Алиса, Google Home).",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "wireless-gateways",
@@ -602,7 +628,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Контроллер умного освещения",
-    description: "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
+    description:
+      "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "pwm-controllers",
@@ -626,7 +653,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Встраиваемый микродиммер",
-    description: "Компактный модуль для диммирования классических ламп накаливания и LED. Прячется прямо за обычным выключателем.",
+    description:
+      "Компактный модуль для диммирования классических ламп накаливания и LED. Прячется прямо за обычным выключателем.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "embedded-dimmers",
@@ -650,7 +678,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Встраиваемый микродиммер",
-    description: "Компактный модуль для диммирования классических ламп накаливания и LED. Прячется прямо за обычным выключателем.",
+    description:
+      "Компактный модуль для диммирования классических ламп накаливания и LED. Прячется прямо за обычным выключателем.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "embedded-dimmers",
@@ -674,7 +703,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Встраиваемый микродиммер",
-    description: "Компактный модуль для диммирования классических ламп накаливания и LED. Прячется прямо за обычным выключателем.",
+    description:
+      "Компактный модуль для диммирования классических ламп накаливания и LED. Прячется прямо за обычным выключателем.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "embedded-dimmers",
@@ -698,7 +728,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Контроллер умного освещения",
-    description: "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
+    description:
+      "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "embedded-dimmers",
@@ -722,7 +753,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Контроллер умного освещения",
-    description: "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
+    description:
+      "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "embedded-dimmers",
@@ -746,7 +778,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Беспроводная панель управления",
-    description: "Стильный пульт-выключатель. Управляйте зонами света, цветом и сценариями без проводов и необходимости штробить стены.",
+    description:
+      "Стильный пульт-выключатель. Управляйте зонами света, цветом и сценариями без проводов и необходимости штробить стены.",
     category: "control",
     categoryLabel: "Управление",
     subcategory: "wireless-buttons",
@@ -770,7 +803,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Беспроводная панель управления",
-    description: "Стильный пульт-выключатель. Управляйте зонами света, цветом и сценариями без проводов и необходимости штробить стены.",
+    description:
+      "Стильный пульт-выключатель. Управляйте зонами света, цветом и сценариями без проводов и необходимости штробить стены.",
     category: "control",
     categoryLabel: "Управление",
     subcategory: "wireless-buttons",
@@ -794,7 +828,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Контроллер умного освещения",
-    description: "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
+    description:
+      "Компактный релейный или ШИМ-модуль для управления источниками света. Обеспечивает плавное диммирование в экосистеме Sunricher 2.4G Mesh.",
     category: "relays-actuators",
     categoryLabel: "Реле и модули",
     subcategory: "pwm-controllers",
@@ -818,7 +853,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Конвертер протоколов DALI / 0-10V",
-    description: "Модуль интеграции для связи беспроводной сети 2.4G Mesh с профессиональным проводным освещением стандартов DALI или 0-10V.",
+    description:
+      "Модуль интеграции для связи беспроводной сети 2.4G Mesh с профессиональным проводным освещением стандартов DALI или 0-10V.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "wireless-gateways",
@@ -842,7 +878,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Конвертер протоколов DALI / 0-10V",
-    description: "Модуль интеграции для связи беспроводной сети 2.4G Mesh с профессиональным проводным освещением стандартов DALI или 0-10V.",
+    description:
+      "Модуль интеграции для связи беспроводной сети 2.4G Mesh с профессиональным проводным освещением стандартов DALI или 0-10V.",
     category: "gateways-protocols",
     categoryLabel: "Протоколы и Шлюзы",
     subcategory: "wireless-gateways",
@@ -866,7 +903,8 @@ export const csvProductSeeds: ProductSeed[] = [
     group: "b2b" as const,
     collection: "Professional · 2.4G Mesh",
     tagline: "Беспроводная панель управления",
-    description: "Стильный пульт-выключатель. Управляйте зонами света, цветом и сценариями без проводов и необходимости штробить стены.",
+    description:
+      "Стильный пульт-выключатель. Управляйте зонами света, цветом и сценариями без проводов и необходимости штробить стены.",
     category: "control",
     categoryLabel: "Управление",
     subcategory: "wireless-buttons",

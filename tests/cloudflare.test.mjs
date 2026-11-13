@@ -133,7 +133,13 @@ test(
         (await productPage.text()).includes(products[0].name),
         "Published product supports a direct page link",
       );
-      assert.equal((await guest("/catalog")).data.length, 197);
+      const catalog = (await guest("/catalog")).data;
+      assert.equal(catalog.filter((item) => !item.demo).length, 197);
+      assert.equal(catalog.filter((item) => item.demo).length, 96);
+      const interest = await guest(`/catalog/${products[0].id}/interest`, { kind: "view" });
+      assert.equal(interest.status, 204);
+      assert.equal((await supplier("/supplier/audience?days=7")).data.summary.views, 1);
+      assert.equal((await other("/supplier/audience?days=7")).data.summary.views, 0);
       const exportBook = await supplier("/supplier/export");
       assert.equal(exportBook.status, 200);
       const exported = new ExcelJS.Workbook();

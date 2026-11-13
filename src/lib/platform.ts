@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import { useUi, displayMoney } from "./ui";
 export const API =
   import.meta.env["VITE_AGAS_API_URL"] || (import.meta.env.DEV ? "http://localhost:4000" : "");
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
 export type User = {
   guest?: boolean;
   id: string;
@@ -22,6 +30,10 @@ export type CatalogItem = {
   stock: number;
   image?: string;
   legacy?: boolean;
+  demo?: boolean;
+  categorySlug?: string;
+  subcategorySlug?: string;
+  sourceUrl?: string;
   supplier_id: string;
   published: boolean;
   iso?: string;
@@ -60,6 +72,14 @@ export type PlatformConfig = {
   emailReady: boolean;
 };
 export const money = displayMoney;
+export function recordInterest(id: string, kind: "view" | "cart" | "favorite") {
+  void fetch(`${API}/api/catalog/${encodeURIComponent(id)}/interest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind }),
+    keepalive: true,
+  }).catch(() => undefined);
+}
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
@@ -75,7 +95,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new Error("Нет соединения с сервером. Проверьте подключение и попробуйте позже");
   }
   const data = await response.json().catch(() => ({ error: "Не удалось прочитать ответ сервера" }));
-  if (!response.ok) throw new Error(data.error || "Не удалось выполнить действие");
+  if (!response.ok)
+    throw new ApiError(data.error || "Не удалось выполнить действие", response.status);
   return data;
 }
 export function useResource<T>(path: string, initial: T) {

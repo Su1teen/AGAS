@@ -31,6 +31,7 @@ import type { CatalogGroupSlug } from "@/data/categories";
 import { csvProductSeeds } from "@/data/csvProducts";
 
 export type Product = {
+  demo?: boolean;
   id: string;
   slug: string;
   name: string;

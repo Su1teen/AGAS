@@ -210,7 +210,25 @@ test("end-to-end: import 121 rows, partial errors, upsert, tenant roles, invoice
     assert.equal((await other("/supplier/products")).data.length, 0);
     const products = (await supplier("/supplier/products")).data;
     assert.equal(products.length, 120);
-    assert.equal((await anonymous("/catalog")).data.length, 120);
+    const publicCatalog = (await anonymous("/catalog")).data;
+    assert.equal(publicCatalog.filter((product) => !product.demo).length, 120);
+    const demo = publicCatalog.filter((product) => product.demo);
+    assert.equal(demo.length, 96);
+    assert.equal(new Set(demo.map((product) => product.image)).size, 96);
+    for (const section of ["kids", "parents", "home-appliances", "clothing"])
+      assert.equal(demo.filter((product) => product.categorySlug === section).length, 24);
+    assert.deepEqual((await supplier("/supplier/demo-catalog")).data, demo);
+    assert.equal((await anonymous(`/catalog/${demo[0].id}`)).data.image, demo[0].image);
+    assert.equal(
+      (
+        await anonymous("/quote", {
+          buyer,
+          delivery: "pickup",
+          items: [{ productId: demo[0].id, quantity: 1 }],
+        })
+      ).status,
+      409,
+    );
     const edited = {
       sku: "SKU-0",
       name: "Обновлённый товар",
@@ -289,6 +307,30 @@ test("end-to-end: import 121 rows, partial errors, upsert, tenant roles, invoice
     assert.equal((await supplier("/supplier/orders")).data.length, 2);
     assert.equal((await other("/supplier/orders")).data.length, 0);
     assert.equal((await supplier("/supplier/analytics")).data.invoicedMinor, 800200);
+    assert.equal((await customer("/supplier/audience")).status, 403);
+    const sendInterest = (kind) =>
+      fetch(`${instance.base}/api/catalog/${p.id}/interest`, {
+        method: "POST",
+        headers: { Origin: "http://localhost:3000", "Content-Type": "application/json" },
+        body: JSON.stringify({ kind }),
+      });
+    for (const kind of ["view", "cart", "favorite"])
+      assert.equal((await sendInterest(kind)).status, 204);
+    const audience = (await analyst("/supplier/audience?days=7")).data;
+    assert.equal(audience.series.length, 7);
+    assert.equal(audience.summary.customers, 2);
+    assert.equal(audience.summary.invoicedMinor, 800200);
+    assert.equal(audience.summary.paidMinor, 0);
+    assert.deepEqual(audience.categories, [{ category: "Свет", views: 1, carts: 1, favorites: 1 }]);
+    assert.ok(audience.customers.some((customer) => customer.guest));
+    assert.ok(audience.customers.every((customer) => !Object.hasOwn(customer, "email")));
+    assert.deepEqual((await other("/supplier/audience")).data.customers, []);
+    assert.deepEqual((await other("/supplier/audience")).data.categories, []);
+    instance.db.prepare("UPDATE invoices SET status='paid' WHERE id=?").run(one.data.id);
+    const payments = (await supplier("/supplier/audience?days=7")).data;
+    assert.equal(payments.summary.paid, 1);
+    assert.equal(payments.summary.paidUnits, 3);
+    assert.equal(payments.summary.paidMinor, 600150);
     assert.equal(
       (
         await supplier("/supplier/leads", {

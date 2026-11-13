@@ -1,7 +1,7 @@
 // localized-ui
 import { tr, useUi } from "@/lib/ui";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Heart,
   Check,
@@ -17,7 +17,8 @@ import { Container } from "@/components/site/Container";
 import { ProductCard } from "@/components/site/ProductCard";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { getRelated } from "@/data/products";
-import { loadProduct } from "@/lib/catalog";
+import { loadProduct, useProducts } from "@/lib/catalog";
+import { recordInterest } from "@/lib/platform";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
@@ -56,8 +57,12 @@ export const Route = createFileRoute("/product/$slug")({
   component: ProductPage,
 });
 function ProductPage() {
-  useUi();
   const { product } = Route.useLoaderData();
+  return <ProductDetails key={product.id} product={product} />;
+}
+
+function ProductDetails({ product }: { product: Awaited<ReturnType<typeof loadProduct>> }) {
+  useUi();
   const [activeImg, setActiveImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"specs" | "compat" | "delivery">("specs");
@@ -67,7 +72,83 @@ function ProductPage() {
   const isFav = useFavorites((s) => s.ids.includes(product.id));
   const toggleCompare = useCompare((s) => s.toggle);
   const inCompare = useCompare((s) => s.ids.includes(product.id));
-  const related = getRelated(product, 4);
+  const { products } = useProducts();
+  const related = product.demo
+    ? products
+        .filter((item) => item.id !== product.id && item.category === product.category)
+        .slice(0, 4)
+    : getRelated(product, 4);
+  useEffect(() => {
+    if (!product.demo) recordInterest(product.id, "view");
+  }, [product.id, product.demo]);
+  if (product.demo)
+    return (
+      <section className="py-8 md:py-12">
+        <Container>
+          <nav
+            aria-label={tr("Путь к категории")}
+            className="mb-8 flex flex-wrap gap-2 text-sm text-ink-soft"
+          >
+            <Link to="/catalog" className="underline">
+              {tr("Каталог")}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link to="/category/$slug" params={{ slug: product.category }} className="underline">
+              {tr(product.categoryLabel)}
+            </Link>
+          </nav>
+          <div className="grid gap-7 lg:grid-cols-2 lg:gap-14">
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              width={550}
+              height={550}
+              className="aspect-square w-full rounded-3xl border border-border bg-white object-contain p-6 md:p-10"
+            />
+            <div className="self-center">
+              <p className="mb-3 text-sm font-medium text-ink-soft">
+                {tr("Демокаталог")} · {product.brand}
+              </p>
+              <h1 className="font-serif text-4xl md:text-6xl">{product.name}</h1>
+              <p className="mt-4 text-lg text-ink-soft">{product.description}</p>
+              <p className="mt-7 text-3xl font-semibold">{formatPrice(product.price)}</p>
+              <p className="mt-2 text-sm text-ink-soft">
+                {tr(
+                  "Цена на момент добавления. Актуальную цену и наличие можно посмотреть у продавца.",
+                )}
+              </p>
+              <a
+                href={product.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-6 inline-flex min-h-11 items-center rounded-full bg-foreground px-5 text-sm text-background"
+              >
+                {tr("Открыть товар на Flip.kz")}
+              </a>
+              <button
+                type="button"
+                onClick={() => toggleFav(product.id)}
+                aria-pressed={isFav}
+                className="ml-2 inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-4 text-sm"
+              >
+                <Heart size={16} className={cn(isFav && "fill-foreground")} />{" "}
+                {tr(isFav ? "В избранном" : "В избранное")}
+              </button>
+            </div>
+          </div>
+          {related.length > 0 && (
+            <section className="mt-14">
+              <h2 className="mb-6 font-serif text-3xl">{tr("Ещё в разделе")}</h2>
+              <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+                {related.map((item) => (
+                  <ProductCard product={item} key={item.id} />
+                ))}
+              </div>
+            </section>
+          )}
+        </Container>
+      </section>
+    );
   return (
     <div>
       <Container>
@@ -80,14 +161,16 @@ function ProductPage() {
             {tr("Каталог")}
           </Link>
           <span>/</span>
-          <Link
-            to="/category/$slug"
-            params={{ slug: product.category }}
-            className="hover:text-foreground"
-          >
-            {tr(product.categoryLabel)}
-          </Link>
-          <span>/</span>
+          {product.category !== "supplier" && (
+            <Link
+              to="/category/$slug"
+              params={{ slug: product.category }}
+              className="hover:text-foreground"
+            >
+              {tr(product.categoryLabel)}
+            </Link>
+          )}
+          {product.category !== "supplier" && <span>/</span>}
           <span className="text-foreground">{tr(product.name)}</span>
         </nav>
       </Container>
@@ -206,7 +289,10 @@ function ProductPage() {
                     </button>
                   </div>
                   <button
-                    onClick={() => addToCart(product.id, qty)}
+                    onClick={() => {
+                      addToCart(product.id, qty);
+                      recordInterest(product.id, "cart");
+                    }}
                     disabled={!product.inStock}
                     className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-medium text-background transition-transform hover:scale-[1.01] disabled:opacity-50"
                   >
@@ -217,7 +303,10 @@ function ProductPage() {
 
                 <div className="mt-3 flex gap-3">
                   <button
-                    onClick={() => toggleFav(product.id)}
+                    onClick={() => {
+                      toggleFav(product.id);
+                      if (!isFav) recordInterest(product.id, "favorite");
+                    }}
                     className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-border text-sm font-medium text-foreground hover:bg-surface"
                   >
                     <Heart className={cn("size-4", isFav && "fill-foreground")} />

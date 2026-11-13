@@ -12,9 +12,20 @@ export async function readUpload(buffer, name, sheetIndex = 0) {
     sheets = [];
   if (/\.csv$/i.test(name)) {
     const source = buffer.toString("utf8").replace(/^\uFEFF/, "");
-    const first = source.split(/\r?\n/)[0];
+    const counts = new Map([
+      [",", 0],
+      [";", 0],
+      ["\t", 0],
+    ]);
+    let quoted = false;
+    for (const char of source.trimStart()) {
+      if (char === '"') quoted = !quoted;
+      if (quoted) continue;
+      if (char === "\n" || char === "\r") break;
+      if (counts.has(char)) counts.set(char, counts.get(char) + 1);
+    }
     rows = parse(source, {
-      delimiter: first.split(";").length > first.split(",").length ? ";" : ",",
+      delimiter: [...counts].sort((a, b) => b[1] - a[1])[0][0],
       bom: true,
       skip_empty_lines: true,
       relax_column_count: true,
@@ -93,7 +104,11 @@ export async function readUpload(buffer, name, sheetIndex = 0) {
   } else fail("Выберите XLSX или CSV в UTF-8. XLS не поддерживается");
   if (rows.length < 2 || rows.length > MAX_ROWS + 1 || rows.some((r) => r.length > 80))
     fail("Нужно от 1 до 5000 строк и не более 80 колонок");
-  const headers = rows.shift().map((s, i) => String(s || `Колонка ${i + 1}`).slice(0, 200));
+  const width = Math.max(...rows.map((row) => row.length));
+  const first = rows.shift();
+  const headers = Array.from({ length: width }, (_, i) =>
+    String(first[i] || `Колонка ${i + 1}`).slice(0, 200),
+  );
   return { headers, rows, images, sheets, sheetIndex };
 }
 export async function workbook(title, headers, rows) {

@@ -1,28 +1,23 @@
 // localized-ui
 import { tr, useUi } from "@/lib/ui";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Heart, ShoppingBag, User, Menu } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Search, Heart, ShoppingBag, User, Menu, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { UiControls } from "@/components/UiControls";
 import { Container } from "./Container";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { catalogGroups } from "@/data/categories";
-const navLinks = [
-  { to: "/catalog", label: "Каталог" },
-  { to: "/category/lighting", label: "Свет" },
-  { to: "/category/control", label: "Управление" },
-  { to: "/category/security", label: "Безопасность" },
-  { to: "/category/hubs-networking", label: "B2B" },
-  { to: "/subscriptions", label: "Подписка" },
-];
+import { catalogGroups, shoppingCategories } from "@/data/categories";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 export function Navbar() {
   useUi();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const cartCount = useCart((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
   const favCount = useFavorites((s) => s.ids.length);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
       <Container>
@@ -31,36 +26,36 @@ export function Navbar() {
             <Link to="/" className="font-serif text-2xl tracking-tight">
               AGAS
             </Link>
-            <nav className="hidden items-center gap-7 xl:flex">
-              {tr(
-                navLinks.map((link) => {
-                  const active =
-                    link.to === "/catalog" ? pathname === "/catalog" : pathname === link.to;
-                  return (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className="text-[13px] font-medium tracking-tight text-ink-soft transition-colors hover:text-foreground data-[active=true]:text-foreground"
-                      data-active={active}
-                    >
-                      {tr(link.label)}
-                    </Link>
-                  );
-                }),
-              )}
-              <div className="group relative">
-                <button className="text-[13px] font-medium tracking-tight text-ink-soft transition-colors hover:text-foreground">
-                  {tr("Категории")}
-                </button>
-                <div className="pointer-events-none absolute left-1/2 top-full w-[720px] -translate-x-1/2 pt-5 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
-                  <div className="grid grid-cols-2 gap-8 rounded-3xl border border-border bg-background/95 p-8 shadow-2xl shadow-foreground/5 backdrop-blur-xl">
+            <nav aria-label={tr("Разделы магазина")} className="hidden items-center gap-5 xl:flex">
+              <Link to="/catalog" className="text-sm font-medium hover:underline">
+                {tr("Каталог")}
+              </Link>
+              {shoppingCategories.map((category) => (
+                <Link
+                  key={category.slug}
+                  to="/category/$slug"
+                  params={{ slug: category.slug }}
+                  className="text-sm text-ink-soft hover:text-foreground data-[status=active]:font-semibold data-[status=active]:text-foreground"
+                >
+                  {tr(category.shortTitle)}
+                </Link>
+              ))}
+              <Popover open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1 text-sm font-medium text-ink-soft hover:text-foreground">
+                    {tr("Все разделы")}
+                    <ChevronDown size={15} />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="center"
+                  className="max-h-[75vh] w-[650px] overflow-y-auto rounded-2xl bg-background p-6"
+                >
+                  <div className="grid grid-cols-2 gap-6">
                     {tr(
                       catalogGroups.map((group) => (
                         <div key={group.slug}>
                           <div className="mb-4">
-                            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-ink-soft">
-                              {tr(group.shortTitle)}
-                            </p>
                             <p className="mt-1 font-serif text-xl text-foreground">
                               {tr(group.title)}
                             </p>
@@ -72,7 +67,8 @@ export function Navbar() {
                                   key={category.slug}
                                   to="/category/$slug"
                                   params={{ slug: category.slug }}
-                                  className="rounded-2xl border border-transparent p-3 transition-colors hover:border-border hover:bg-surface"
+                                  onClick={() => setCategoriesOpen(false)}
+                                  className="rounded-xl border border-transparent px-3 py-2 transition-colors hover:border-border hover:bg-surface"
                                 >
                                   <span className="block text-sm font-medium text-foreground">
                                     {tr(category.shortTitle)}
@@ -88,19 +84,50 @@ export function Navbar() {
                       )),
                     )}
                   </div>
-                </div>
-              </div>
+                </PopoverContent>
+              </Popover>
             </nav>
           </div>
 
           <div className="flex items-center gap-2">
             <UiControls />
-            <button
-              aria-label={tr("Поиск")}
-              className="hidden h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface md:flex"
-            >
-              <Search className="size-[18px]" strokeWidth={1.5} />
-            </button>
+            <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  aria-label={tr("Поиск")}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface"
+                >
+                  <Search className="size-[18px]" strokeWidth={1.5} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[min(20rem,90vw)] bg-background">
+                <form
+                  role="search"
+                  className="flex gap-2"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    const q = String(new FormData(event.currentTarget).get("q") || "").trim();
+                    setSearchOpen(false);
+                    void navigate({ to: "/catalog", search: { q, all: !q } });
+                  }}
+                >
+                  <input
+                    name="q"
+                    type="search"
+                    maxLength={120}
+                    aria-label={tr("Поиск товаров")}
+                    placeholder={tr("Название, бренд или артикул")}
+                    className="min-w-0 flex-1 rounded-lg border border-border px-3 py-2 text-sm"
+                  />
+                  <button
+                    aria-label={tr("Найти")}
+                    className="rounded-lg bg-foreground px-3 text-background"
+                  >
+                    <Search size={17} />
+                  </button>
+                </form>
+              </PopoverContent>
+            </Popover>
             <Link
               to="/favorites"
               aria-label={tr("Избранное")}
@@ -142,23 +169,25 @@ export function Navbar() {
                   <Menu className="size-[18px]" strokeWidth={1.5} />
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 bg-background">
+              <SheetContent side="right" className="w-80 overflow-y-auto bg-background">
                 <SheetHeader>
                   <SheetTitle className="font-serif text-2xl">AGAS</SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-1">
-                  {tr(
-                    navLinks.map((link) => (
-                      <Link
-                        key={link.to}
-                        to={link.to}
-                        onClick={() => setMobileOpen(false)}
-                        className="rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-surface"
-                      >
-                        {tr(link.label)}
-                      </Link>
-                    )),
-                  )}
+                  <Link
+                    to="/catalog"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-md px-3 py-3 text-base font-medium hover:bg-surface"
+                  >
+                    {tr("Каталог")}
+                  </Link>
+                  <Link
+                    to="/subscriptions"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-md px-3 py-3 text-base font-medium hover:bg-surface"
+                  >
+                    {tr("Подписка")}
+                  </Link>
                   {tr(
                     catalogGroups.map((group) => (
                       <div key={group.slug} className="mt-4">

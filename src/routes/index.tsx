@@ -7,28 +7,29 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { TrustSignals } from "@/components/site/TrustSignals";
 import { ScenariosCarousel } from "@/components/site/ScenariosCarousel";
-import { products } from "@/data/products";
-import { catalogGroups, categories } from "@/data/categories";
+import { catalogGroups, categories, shoppingCategories } from "@/data/categories";
+import { useProducts } from "@/lib/catalog";
+import { products as fallbackProducts } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import heroHub from "@/assets/hero-hub.jpg";
 import detail from "@/assets/detail-material.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AGAS — Маркетплейс умного дома · Астана" },
+      { title: "AGAS — Маркетплейс для дома и семьи · Казахстан" },
       {
         name: "description",
-        content:
-          "Освещение, акустика, климат и безопасность. Премиальные устройства умного дома с доставкой по Казахстану.",
+        content: "Товары для детей и родителей, бытовая техника, одежда и устройства умного дома.",
       },
-      { property: "og:title", content: "AGAS — Маркетплейс умного дома" },
+      { property: "og:title", content: "AGAS — Маркетплейс для дома и семьи" },
     ],
   }),
   component: HomePage,
 });
 function HomePage() {
   useUi();
-  const featured = products.find((p) => p.featured && p.isNew) ?? products[0];
+  const { products } = useProducts();
+  const featured = products.find((p) => p.featured && p.isNew) ?? fallbackProducts[0];
   const recommended = products.filter((p) => p.featured || p.oldPrice || p.isNew).slice(0, 8);
   const bundle = products
     .filter((p) =>
@@ -68,6 +69,40 @@ function HomePage() {
   ];
   return (
     <div>
+      <section className="border-b border-border bg-surface/60 py-7 md:py-10">
+        <Container>
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="font-serif text-3xl md:text-4xl">{tr("Покупки для дома и семьи")}</h2>
+            <Link to="/catalog" className="text-sm font-medium underline underline-offset-4">
+              {tr("Весь каталог")}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            {shoppingCategories.map((category) => (
+              <Link
+                key={category.slug}
+                to="/category/$slug"
+                params={{ slug: category.slug }}
+                className="group flex min-h-28 items-center justify-between overflow-hidden rounded-2xl border border-border bg-background pl-3 transition-colors hover:border-foreground/50 md:pl-5"
+              >
+                <div className="relative z-10 py-3">
+                  <h3 className="text-sm font-semibold md:text-base">{tr(category.title)}</h3>
+                  <p className="mt-1 hidden text-xs text-ink-soft sm:block">
+                    {tr(category.tagline)}
+                  </p>
+                </div>
+                <img
+                  src={category.cover}
+                  alt=""
+                  width={104}
+                  height={104}
+                  className="size-16 shrink-0 object-contain p-1 mix-blend-multiply transition-transform group-hover:scale-105 sm:size-24 md:p-2"
+                />
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </section>
       {/* HERO */}
       <section className="relative pt-8 pb-16 md:pt-10 md:pb-20">
         <Container>
@@ -199,13 +234,7 @@ function HomePage() {
       <section className="bg-surface/50 py-24">
         <Container>
           <SectionHeading
-            eyebrow="Категории"
-            title={tr(
-              <>
-                {tr("Две группы, тринадцать")}
-                <em className="font-serif italic">{tr("направлений")}</em>
-              </>,
-            )}
+            title={tr("Умный дом и автоматизация")}
             actionLabel="Все категории"
             actionTo="/catalog"
           />
@@ -216,7 +245,6 @@ function HomePage() {
                   key={group.slug}
                   className="rounded-3xl border border-border bg-background p-6"
                 >
-                  <span className="eyebrow">{tr(group.shortTitle)}</span>
                   <h3 className="mt-3 font-serif text-3xl text-foreground">{tr(group.title)}</h3>
                   <p className="mt-3 max-w-[48ch] text-sm text-ink-soft">{tr(group.description)}</p>
                 </div>
@@ -225,28 +253,27 @@ function HomePage() {
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {tr(
-              categories.map((cat, idx) => (
-                <Link
-                  key={cat.slug}
-                  to="/category/$slug"
-                  params={{ slug: cat.slug }}
-                  className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface ring-1 ring-border"
-                >
-                  <img
-                    src={cat.cover}
-                    alt={tr(cat.title)}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent p-5">
-                    <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/75 tabular-nums">
-                      0{tr(idx + 1)}
-                    </span>
-                    <h3 className="mt-1 font-serif text-2xl text-white">{tr(cat.title)}</h3>
-                    <p className="mt-1 text-xs text-white/75">{tr(cat.tagline)}</p>
-                  </div>
-                </Link>
-              )),
+              categories
+                .filter((category) => !shoppingCategories.includes(category))
+                .map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    to="/category/$slug"
+                    params={{ slug: cat.slug }}
+                    className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface ring-1 ring-border"
+                  >
+                    <img
+                      src={cat.cover}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent p-5">
+                      <h3 className="mt-1 font-serif text-2xl text-white">{tr(cat.title)}</h3>
+                      <p className="mt-1 text-xs text-white/75">{tr(cat.tagline)}</p>
+                    </div>
+                  </Link>
+                )),
             )}
           </div>
         </Container>

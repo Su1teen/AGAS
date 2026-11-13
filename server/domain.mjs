@@ -185,7 +185,7 @@ export function quote(input, lookup, config) {
     grouped.set(i.productId, (grouped.get(i.productId) || 0) + i.quantity);
   const lines = [...grouped].map(([id, quantity]) => {
     const p = lookup(id);
-    if (!p || !p.published) fail("Товар недоступен. Обновите корзину", 409);
+    if (!p || !p.published || p.demo) fail("Товар недоступен. Обновите корзину", 409);
     if (quantity > p.stock || quantity > 999) fail(`Недостаточно товара: ${p.name}`, 409);
     return {
       productId: id,

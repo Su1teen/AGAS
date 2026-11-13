@@ -11,3 +11,4 @@ CREATE TABLE IF NOT EXISTS leads(id TEXT PRIMARY KEY,supplier_id TEXT NOT NULL R
 CREATE TABLE IF NOT EXISTS mail_log(id TEXT PRIMARY KEY,invoice_id TEXT NOT NULL REFERENCES invoices(id),recipient TEXT NOT NULL,status TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
 CREATE INDEX IF NOT EXISTS idx_products_supplier ON products(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_order_supplier ON order_lines(supplier_id);
+CREATE TABLE IF NOT EXISTS catalog_interest(day TEXT NOT NULL,supplier_id TEXT NOT NULL REFERENCES suppliers(id),product_id TEXT NOT NULL,kind TEXT NOT NULL CHECK(kind IN('view','cart','favorite')),count INTEGER NOT NULL DEFAULT 1,PRIMARY KEY(supplier_id,day,product_id,kind));

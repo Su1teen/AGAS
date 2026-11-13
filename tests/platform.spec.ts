@@ -1,6 +1,101 @@
 import { test, expect } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import ExcelJS from "exceljs";
 const out = process.env["SCREENSHOT_DIR"] || "test-results/visual";
+const shopUrl = process.env["TEST_SHOP_URL"] || "http://localhost:3000";
+const sellerUrl = process.env["TEST_SELLER_URL"] || "http://localhost:3001";
+test("storefront category filters and demo photos match the supplier workspace", async ({
+  page,
+}) => {
+  await page.route("**/api/fx", (route) => route.fulfill({ json: null }));
+  await page.goto(shopUrl);
+  await page
+    .getByRole("navigation", { name: "Разделы магазина" })
+    .getByRole("link", { name: "Детям", exact: true })
+    .click();
+  await expect(page.getByRole("heading", { name: "Детям", level: 1 })).toBeVisible();
+  await expect(page.locator("article")).toHaveCount(24);
+  await page.getByRole("link", { name: "Конструкторы", exact: true }).click();
+  await expect(page.locator("article")).toHaveCount(8);
+  const photo = await page.locator("article img").first().getAttribute("src");
+  await expect
+    .poll(() =>
+      page
+        .locator("article img")
+        .first()
+        .evaluate((img: HTMLImageElement) => img.naturalWidth),
+    )
+    .toBeGreaterThan(200);
+  await page.locator("article a").first().click();
+  await expect(page.getByRole("link", { name: "Открыть товар на Flip.kz" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "В корзину", exact: true })).toHaveCount(0);
+  await page.goto(sellerUrl);
+  await page.getByRole("button", { name: "Создать аккаунт", exact: true }).click();
+  await page.getByLabel("Ваше имя").fill("Тестовый поставщик");
+  await page.getByLabel("Организация", { exact: true }).fill("Демокаталог и импорт");
+  await page.getByLabel("Электронная почта").fill(`demo-${Date.now()}@example.test`);
+  await page.getByLabel("Пароль", { exact: true }).fill("Test-password-12345");
+  await page.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
+  await page.getByRole("link", { name: "Каталог", exact: true }).click();
+  await page.getByRole("button", { name: "Демокаталог витрины" }).click();
+  await page
+    .getByRole("textbox", { name: "Поиск товаров" })
+    .fill(photo!.split("/").at(-1)!.replace(".jpg", ""));
+  const adminImage = page.locator(".seller-table img");
+  await expect(adminImage).toHaveAttribute("src", `${shopUrl}${photo}`);
+  await expect
+    .poll(() => adminImage.evaluate((img: HTMLImageElement) => img.naturalWidth))
+    .toBeGreaterThan(200);
+  await page.getByRole("link", { name: "Покупатели", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Счетов за этот период нет" })).toBeVisible();
+  await page.getByRole("button", { name: "Интересы", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Интерес по категориям" })).toBeVisible();
+  await page.getByRole("link", { name: "Загрузка", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Выбрать файл", exact: true })).toBeEnabled();
+  await page.route("**/supplier/imports/preview", (route) => route.abort());
+  const book = new ExcelJS.Workbook();
+  for (const name of ["Январь", "Февраль"]) {
+    const sheet = book.addWorksheet(name);
+    sheet.addRow(["Артикул", "Название", "Категория", "Цена", "Остаток"]);
+    sheet.addRow(["BOOK-01", name + " тестовый товар", "Одежда", 12500, 4]);
+  }
+  await page.locator("input[type=file]").setInputFiles({
+    name: "Ассортимент.xlsx",
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from(await book.xlsx.writeBuffer()),
+  });
+  await expect(page.getByRole("heading", { name: "Назначьте поля колонкам" })).toBeVisible();
+  await page.getByLabel("Лист", { exact: true }).selectOption({ label: "Февраль" });
+  await expect(page.getByRole("cell", { name: "Февраль тестовый товар" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Проверить данные", exact: true })).toBeEnabled();
+  await page.locator("input[type=file]").evaluate((input: HTMLInputElement) => {
+    const max = 250_000_000;
+    const header = "SKU;Name;Category;Price;Stock;Description\n";
+    const row = `LIMIT;Large CSV;Clothing;1000;1;${"A".repeat(40_000)}\n`;
+    const block = new Blob([row.repeat(25)]);
+    const count = Math.floor((max - header.length) / block.size);
+    const rest = (max - header.length) % block.size;
+    const data = new DataTransfer();
+    data.items.add(
+      new File([header, ...Array<Blob>(count).fill(block), block.slice(0, rest)], "large.csv"),
+    );
+    input.files = data.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(page.getByRole("heading", { name: "Назначьте поля колонкам" })).toBeVisible({
+    timeout: 45_000,
+  });
+  await expect(page.getByRole("cell", { name: "Large CSV", exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Проверить данные", exact: true })).toBeDisabled();
+  await page.locator("input[type=file]").evaluate((input: HTMLInputElement) => {
+    const part = new Blob(["x".repeat(1_000_000)]);
+    const data = new DataTransfer();
+    data.items.add(new File([...Array<Blob>(250).fill(part), "x"], "too-large.csv"));
+    input.files = data.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(page.getByRole("alert")).toContainText("Размер файла не более 250 МБ");
+});
 test("supplier import → marketplace checkout → invoice → supplier orders; responsive UI and failure state", async ({
   browser,
 }) => {
@@ -20,7 +115,7 @@ test("supplier import → marketplace checkout → invoice → supplier orders; 
   const seller = await supplierContext.newPage();
   const errors: string[] = [];
   seller.on("pageerror", (e) => errors.push(e.message));
-  await seller.goto("http://localhost:3001");
+  await seller.goto(sellerUrl);
   await seller.getByRole("button", { name: "Создать аккаунт", exact: true }).click();
   await seller.getByLabel("Ваше имя").fill("Тестовый поставщик");
   await seller.getByLabel("Организация", { exact: true }).fill("Компания для проверки");
@@ -29,6 +124,7 @@ test("supplier import → marketplace checkout → invoice → supplier orders; 
   await seller.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
   await expect(seller.getByRole("heading", { name: "Обзор для руководства" })).toBeVisible();
   await seller.getByRole("link", { name: "Загрузка", exact: true }).click();
+  await expect(seller.getByRole("button", { name: "Выбрать файл", exact: true })).toBeEnabled();
   const csv = [
     "Артикул;Название;Категория;Цена;Остаток;Описание;Бренд;ISO / сертификат;Номер документа поставки",
     ...Array.from(
@@ -73,12 +169,13 @@ test("supplier import → marketplace checkout → invoice → supplier orders; 
   );
   const buyer = await customerContext.newPage();
   buyer.on("pageerror", (e) => errors.push(e.message));
-  await buyer.goto("http://localhost:3000/catalog");
+  await buyer.goto(`${shopUrl}/catalog`);
   const ownProducts = await (
     await supplierContext.request.get("http://localhost:4000/api/supplier/products")
   ).json();
   const chosen = ownProducts.find((p: { sku: string }) => p.sku === "BROWSER-0");
-  await buyer.getByRole("button", { name: "Все товары", exact: true }).click();
+  await buyer.getByRole("searchbox", { name: "Поиск товаров" }).fill("Светильник 000");
+  await buyer.getByRole("button", { name: "Найти", exact: true }).click();
   const productLink = buyer.locator('a[href="/product/' + chosen.id + '"]').first();
   await productLink.click();
   await expect(buyer.getByRole("heading", { name: "Светильник 000", level: 1 })).toBeVisible();
@@ -86,7 +183,7 @@ test("supplier import → marketplace checkout → invoice → supplier orders; 
     .getByRole("button", { name: /В корзину|Добавить в корзину/ })
     .first()
     .click();
-  await buyer.goto("http://localhost:3000/checkout");
+  await buyer.goto(`${shopUrl}/checkout`);
   await expect(buyer.getByRole("button", { name: "Зарегистрироваться", exact: true })).toHaveCount(
     0,
   );

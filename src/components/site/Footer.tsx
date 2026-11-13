@@ -28,7 +28,11 @@ export function Footer() {
             <h5 className="eyebrow">{tr("Каталог")}</h5>
             <ul className="mt-6 space-y-3 text-sm text-ink-soft">
               <li>
-                <Link to="/catalog" className="transition-colors hover:text-foreground">
+                <Link
+                  to="/catalog"
+                  search={{ all: true }}
+                  className="transition-colors hover:text-foreground"
+                >
                   {tr("Все товары")}
                 </Link>
               </li>

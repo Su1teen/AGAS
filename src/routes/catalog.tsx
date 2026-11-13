@@ -1,20 +1,31 @@
 import { tr, useUi } from "@/lib/ui";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  stripSearchParams,
+  type SearchSchemaInput,
+} from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Container } from "@/components/site/Container";
 import { ProductCard } from "@/components/site/ProductCard";
 import { useProducts } from "@/lib/catalog";
-import { categories } from "@/data/categories";
+import { catalogGroups } from "@/data/categories";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ChevronDown, X, ArrowLeft } from "lucide-react";
+import { ChevronDown, X, ArrowLeft, Search } from "lucide-react";
 
 export const Route = createFileRoute("/catalog")({
+  validateSearch: (search: { q?: string; all?: boolean } & SearchSchemaInput) => ({
+    q: typeof search.q === "string" ? search.q.slice(0, 120) : "",
+    all: search.all === true,
+  }),
+  search: { middlewares: [stripSearchParams({ q: "", all: false })] },
   head: () => ({
     meta: [
       { title: "Каталог · AGAS" },
       {
         name: "description",
-        content: "Полный каталог устройств умного дома: освещение, акустика, климат, безопасность.",
+        content:
+          "Товары для детей и родителей, одежда, бытовая техника и оборудование для умного дома.",
       },
       { property: "og:title", content: "Каталог · AGAS" },
     ],
@@ -27,8 +38,10 @@ type Budget = "all" | "under-50" | "50-150" | "150-plus";
 
 function CatalogPage() {
   useUi();
-  const { products, loading } = useProducts();
-  const [cat, setCat] = useState<string | null>(null);
+  const { products, loading, error, reload } = useProducts();
+  const { q, all } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [limit, setLimit] = useState(32);
   const [brand, setBrand] = useState<string | null>(null);
   const [protocol, setProtocol] = useState<string | null>(null);
   const [functionality, setFunctionality] = useState<string | null>(null);
@@ -48,7 +61,15 @@ function CatalogPage() {
 
   const list = useMemo(() => {
     let arr = [...products];
-    if (cat && cat !== "all-products") arr = arr.filter((p) => p.category === cat);
+    const terms = q.trim().toLowerCase().replaceAll("ё", "е").split(/\s+/).filter(Boolean);
+    if (terms.length)
+      arr = arr.filter((p) => {
+        const text =
+          `${p.name} ${p.brand} ${p.categoryLabel} ${p.subcategoryLabel} ${p.specs["Артикул"] || ""}`
+            .toLowerCase()
+            .replaceAll("ё", "е");
+        return terms.every((term) => text.includes(term));
+      });
     if (brand) arr = arr.filter((p) => p.brand === brand);
     if (protocol) arr = arr.filter((p) => p.protocols.includes(protocol));
     if (functionality) arr = arr.filter((p) => p.functions.includes(functionality));
@@ -70,9 +91,7 @@ function CatalogPage() {
         arr.sort((a, b) => b.rating - a.rating);
     }
     return arr;
-  }, [brand, budget, cat, functionality, inStockOnly, protocol, sort, products]);
-
-  const activeCategory = useMemo(() => categories.find((c) => c.slug === cat), [cat]);
+  }, [brand, budget, q, functionality, inStockOnly, protocol, sort, products]);
 
   const hasActiveFilters =
     brand || protocol || functionality || budget !== "all" || inStockOnly || sort !== "popular";
@@ -89,104 +108,114 @@ function CatalogPage() {
   return (
     <div className="min-h-screen pb-24 pt-8">
       <Container>
-        {/* Top Horizontal Category Tabs */}
-        <div className="mb-10 flex w-full items-center gap-3 overflow-x-auto scrollbar-hide pb-2">
-          <button
-            onClick={() => setCat(null)}
-            className={`shrink-0 rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-              !cat
-                ? "bg-foreground text-background"
-                : "border border-border bg-transparent text-ink-soft hover:text-foreground"
-            }`}
-          >
-            {tr("Все категории")}
+        <form
+          role="search"
+          className="mb-8 flex gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const query = String(new FormData(event.currentTarget).get("q") || "").trim();
+            clearFilters();
+            setLimit(32);
+            void navigate({ search: { q: query, all: !query } });
+          }}
+        >
+          <input
+            key={q}
+            name="q"
+            type="search"
+            defaultValue={q}
+            maxLength={120}
+            aria-label={tr("Поиск товаров")}
+            placeholder={tr("Название, бренд или артикул")}
+            className="min-w-0 flex-1 rounded-xl border border-border px-4 py-3"
+          />
+          <button className="flex items-center gap-2 rounded-xl bg-foreground px-4 text-sm text-background">
+            <Search size={17} />
+            {tr("Найти")}
           </button>
-          <button
-            disabled={loading}
-            onClick={() => setCat("all-products")}
-            className={`shrink-0 rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-              cat === "all-products"
-                ? "bg-foreground text-background"
-                : "border border-border bg-transparent text-ink-soft hover:text-foreground"
-            }`}
-          >
-            {tr("Все товары")}
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c.slug}
-              onClick={() => setCat(c.slug)}
-              className={`shrink-0 rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-                cat === c.slug
-                  ? "bg-foreground text-background"
-                  : "border border-border bg-transparent text-ink-soft hover:text-foreground"
-              }`}
-            >
-              {tr(c.shortTitle)}
+        </form>
+        {error && (
+          <p className="mb-5 text-sm" role="alert">
+            {tr(error)}{" "}
+            <button onClick={reload} className="underline">
+              {tr("Повторить")}
             </button>
-          ))}
-        </div>
+          </p>
+        )}
 
-        {!cat ? (
+        {!all && !q ? (
           /* When NO category selected — Large Category Cards Grid */
           <div>
             <div className="mb-12 flex flex-col gap-4">
-              <span className="eyebrow">{tr("Каталог")}</span>
               <h1 className="font-serif text-5xl leading-[1.05] text-foreground md:text-6xl">
-                {tr("Все устройства AGAS")}
+                {tr("Каталог AGAS")}
               </h1>
               <p className="max-w-[52ch] text-base text-ink-soft text-pretty">
-                {tr(
-                  "Полный ассортимент премиальной экосистемы: устройства для дома и инфраструктура для профессиональных инсталляций.",
-                )}
+                {tr("Товары для семьи, бытовая техника и оборудование для умного дома.")}
               </p>
+              <Link
+                to="/catalog"
+                search={{ q: "", all: true }}
+                className="w-fit text-sm font-medium underline underline-offset-4"
+              >
+                {tr("Все товары")}
+              </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {categories.map((category) => {
-                const count = products.filter((p) => p.category === category.slug).length;
-                return (
-                  <Link
-                    key={category.slug}
-                    to="/category/$slug"
-                    params={{ slug: category.slug }}
-                    className="group relative flex h-[420px] flex-col overflow-hidden rounded-3xl border border-border bg-background p-0 transition-transform duration-500 hover:-translate-y-1"
-                  >
-                    <div className="flex flex-col gap-2 p-6 pb-4">
-                      <div className="flex items-center justify-between">
-                        <span className="eyebrow">
-                          {tr(count)} {tr("товаров")}
-                        </span>
-                      </div>
-                      <h3 className="font-serif text-2xl text-foreground">{tr(category.title)}</h3>
-                      <p className="text-sm text-ink-soft">{tr(category.tagline)}</p>
-                    </div>
-                    <div className="relative mt-auto aspect-[4/3] w-full overflow-hidden">
-                      <img
-                        src={category.cover}
-                        alt={category.title}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            {catalogGroups.map((group) => (
+              <section className="mb-12" key={group.slug}>
+                <h2 className="mb-5 font-serif text-3xl">{tr(group.title)}</h2>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                  {group.categories.map((category) => {
+                    const count = products.filter((p) => p.category === category.slug).length;
+                    return (
+                      <Link
+                        key={category.slug}
+                        to="/category/$slug"
+                        params={{ slug: category.slug }}
+                        className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-background transition-transform hover:-translate-y-1"
+                      >
+                        <div className="flex flex-col gap-2 p-4 md:p-5">
+                          <div className="flex items-center justify-between">
+                            <span className="eyebrow">
+                              {!loading && `${count} ${tr("товаров")}`}
+                            </span>
+                          </div>
+                          <h3 className="font-serif text-2xl text-foreground">
+                            {tr(category.title)}
+                          </h3>
+                          <p className="text-sm text-ink-soft">{tr(category.tagline)}</p>
+                        </div>
+                        <div className="relative mt-auto aspect-[4/3] w-full overflow-hidden bg-white">
+                          <img
+                            src={category.cover}
+                            alt=""
+                            loading="lazy"
+                            className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${category.cover.includes("/demo/") ? "object-contain p-3" : "object-cover"}`}
+                          />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
           /* When a category IS selected — Product Grid with Inline Filters */
           <div>
             <div className="mb-8">
-              <button
-                onClick={() => setCat(null)}
+              <Link
+                to="/catalog"
+                search={{ q: "", all: false }}
                 className="mb-6 flex items-center gap-2 text-sm text-ink-soft transition-colors hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4" />
                 {tr("Все категории")}
-              </button>
-              <h2 className="font-serif text-4xl text-foreground md:text-5xl">
-                {tr(cat === "all-products" ? "Все товары" : activeCategory?.title)}
-              </h2>
+              </Link>
+              <h1 className="font-serif text-4xl text-foreground md:text-5xl">
+                {q ? `${tr("Результаты поиска")} «${q}»` : tr("Все товары")}
+              </h1>
             </div>
 
             {/* Inline Filters */}
@@ -403,7 +432,9 @@ function CatalogPage() {
               )}
             </div>
 
-            {list.length === 0 ? (
+            {loading && list.length === 0 ? (
+              <p role="status">{tr("Загрузка товаров…")}</p>
+            ) : list.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-surface/30 py-24 text-center">
                 <p className="text-base text-ink-soft mb-4">{tr("Ничего не найдено")}</p>
                 <button
@@ -414,11 +445,24 @@ function CatalogPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-                {list.map((p) => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
-              </div>
+              <>
+                <p className="mb-5 text-sm text-ink-soft" role="status">
+                  {list.length} {tr("товаров")}
+                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
+                  {list.slice(0, limit).map((p) => (
+                    <ProductCard key={p.id} product={p} />
+                  ))}
+                </div>
+                {list.length > limit && (
+                  <button
+                    className="mx-auto mt-8 block rounded-full border border-border px-6 py-3 text-sm"
+                    onClick={() => setLimit((value) => value + 32)}
+                  >
+                    {tr("Показать ещё")}
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}

@@ -10,7 +10,9 @@ const config = configFromEnv({
   SELLER_BANK: "Тестовый банк",
   SELLER_IBAN: "KZ000000000000000000",
   SELLER_BIK: "TESTKZ00",
-  ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001",
+  ALLOWED_ORIGINS:
+    process.env.ALLOWED_ORIGINS ||
+    "http://localhost:3000,http://localhost:3001,http://localhost:3010,http://localhost:3011",
 });
 const { app, db } = createApp({ dbPath: join(dir, "e2e.sqlite"), config });
 const server = app.listen(4000, "127.0.0.1");

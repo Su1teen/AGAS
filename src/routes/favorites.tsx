@@ -6,7 +6,7 @@ import { Container } from "@/components/site/Container";
 import { ProductCard } from "@/components/site/ProductCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { useFavorites } from "@/store/favorites";
-import { products } from "@/data/products";
+import { useProducts } from "@/lib/catalog";
 export const Route = createFileRoute("/favorites")({
   head: () => ({ meta: [{ title: "Избранное · AGAS" }] }),
   component: FavoritesPage,
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/favorites")({
 function FavoritesPage() {
   useUi();
   const ids = useFavorites((s) => s.ids);
+  const { products } = useProducts();
   const items = products.filter((p) => ids.includes(p.id));
   return (
     <div className="py-12 md:py-16">

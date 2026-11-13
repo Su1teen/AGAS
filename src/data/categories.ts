@@ -6,6 +6,7 @@ import lifestyleBedroom from "@/assets/lifestyle-bedroom.jpg";
 import lifestyleKitchen from "@/assets/lifestyle-kitchen.jpg";
 import lifestyleLiving from "@/assets/lifestyle-living.jpg";
 import detail from "@/assets/detail-material.jpg";
+import demo from "./demo-products.json";
 
 export type CatalogGroupSlug = "b2c" | "b2b";
 
@@ -33,7 +34,67 @@ export type CatalogGroup = {
   categories: Category[];
 };
 
+const cover = (slug: string) => demo.find((item) => item.categorySlug === slug)?.image || detail;
+export const shoppingCategories: Category[] = [
+  {
+    slug: "kids",
+    group: "b2c",
+    title: "Детям",
+    shortTitle: "Детям",
+    tagline: "Конструкторы, игры и творчество",
+    description: "Игрушки для самостоятельной игры, семейных вечеров и первых занятий творчеством.",
+    cover: cover("kids"),
+    subcategories: [
+      { slug: "building", title: "Конструкторы" },
+      { slug: "games", title: "Игры и пазлы" },
+      { slug: "creativity", title: "Творчество и развитие" },
+    ],
+  },
+  {
+    slug: "parents",
+    group: "b2c",
+    title: "Родителям",
+    shortTitle: "Родителям",
+    tagline: "Кормление, уход и прогулки",
+    description: "Товары для кормления, повседневного ухода и прогулок с малышом.",
+    cover: cover("parents"),
+    subcategories: [
+      { slug: "feeding", title: "Кормление" },
+      { slug: "travel", title: "Прогулки и поездки" },
+      { slug: "care", title: "Уход" },
+    ],
+  },
+  {
+    slug: "home-appliances",
+    group: "b2c",
+    title: "Техника для дома",
+    shortTitle: "Для дома",
+    tagline: "Для кухни и уборки",
+    description: "Кухонная техника и приборы для ухода за домом на каждый день.",
+    cover: cover("home-appliances"),
+    subcategories: [
+      { slug: "kitchen", title: "Кухня" },
+      { slug: "cleaning", title: "Уборка" },
+    ],
+  },
+  {
+    slug: "clothing",
+    group: "b2c",
+    title: "Одежда",
+    shortTitle: "Одежда",
+    tagline: "Футболки, платья, худи и свитшоты",
+    description: "Повседневная одежда для прогулок, работы и отдыха.",
+    cover: cover("clothing"),
+    subcategories: [
+      { slug: "womens", title: "Женская одежда" },
+      { slug: "tshirts", title: "Мужские футболки и поло" },
+      { slug: "hoodies", title: "Худи и свитшоты" },
+    ],
+  },
+];
+
 export const categories: Category[] = [
+  ...shoppingCategories,
   {
     slug: "lighting",
     group: "b2c",
@@ -260,15 +321,15 @@ export const categories: Category[] = [
 export const catalogGroups: CatalogGroup[] = [
   {
     slug: "b2c",
-    title: "Группа 1 · Для конечного пользователя",
-    shortTitle: "B2C",
+    title: "Для дома и семьи",
+    shortTitle: "Для дома и семьи",
     description: "Готовые устройства и сценарии для квартир, домов и wellness-пространств.",
     categories: categories.filter((category) => category.group === "b2c"),
   },
   {
     slug: "b2b",
-    title: "Группа 2 · Технические и профессиональные категории",
-    shortTitle: "B2B",
+    title: "Для профессионалов",
+    shortTitle: "Для профессионалов",
     description: "Инженерная база для интеграторов, щитов, шинных протоколов и HVAC.",
     categories: categories.filter((category) => category.group === "b2b"),
   },

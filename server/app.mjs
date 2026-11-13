@@ -27,6 +27,8 @@ import {
 import { readUpload, template, workbook } from "./workbooks.mjs";
 import { invoicePdf } from "./pdf.mjs";
 import { exchangeRate } from "./fx.mjs";
+import { audienceAnalytics } from "./audience.mjs";
+import { demoProducts } from "./demo-catalog.mjs";
 
 export function configFromEnv(env = process.env) {
   const vat = env.SELLER_VAT_RATE ? Number(env.SELLER_VAT_RATE) : null;
@@ -120,9 +122,10 @@ export function createApp({
     stock: p.stock,
     published: Boolean(p.published),
   });
+  const demoById = new Map(demoProducts.map((product) => [product.id, product]));
   const lookup = (id) => {
     const p = get("SELECT * FROM products WHERE id=?", id);
-    return p ? publicProduct(p) : null;
+    return p ? publicProduct(p) : demoById.get(id) || null;
   };
   const app = express();
   app.disable("x-powered-by");
@@ -263,16 +266,37 @@ export function createApp({
   });
   app.get("/api/auth/me", auth, (req, res) => res.json(me(req.user)));
   app.get("/api/catalog", (req, res) =>
-    res.json(
-      all("SELECT * FROM products WHERE published=1 ORDER BY updated_at DESC,id").map(
+    res.json([
+      ...all("SELECT * FROM products WHERE published=1 ORDER BY updated_at DESC,id").map(
         publicProduct,
       ),
-    ),
+      ...demoProducts,
+    ]),
   );
   app.get("/api/catalog/:id", (req, res) => {
     const p = lookup(req.params.id);
     if (!p?.published) fail("Товар не найден", 404);
     res.json(p);
+  });
+  const interestRate = rateLimit({
+    windowMs: 60000,
+    limit: 75,
+    standardHeaders: false,
+    legacyHeaders: false,
+  });
+  app.post("/api/catalog/:id/interest", interestRate, (req, res) => {
+    const kind = z.enum(["view", "cart", "favorite"]).parse(req.body.kind);
+    const item = get("SELECT supplier_id FROM products WHERE id=? AND published=1", req.params.id);
+    if (item)
+      run(
+        `INSERT INTO catalog_interest(day,supplier_id,product_id,kind)
+       VALUES(date('now','+5 hours'),?,?,?)
+       ON CONFLICT(supplier_id,day,product_id,kind) DO UPDATE SET count=count+1`,
+        item.supplier_id,
+        req.params.id,
+        kind,
+      );
+    res.sendStatus(204);
   });
   app.post("/api/quote", (req, res) => {
     const input = checkout.parse(req.body);
@@ -431,6 +455,14 @@ export function createApp({
       ).map(publicProduct),
     ),
   );
+  app.get("/api/supplier/demo-catalog", staff, (req, res) => res.json(demoProducts));
+  app.get("/api/supplier/audience", staff, (req, res) => {
+    const days = z.coerce
+      .number()
+      .pipe(z.union([z.literal(7), z.literal(30), z.literal(90)]))
+      .parse(req.query.days ?? 30);
+    res.json(audienceAnalytics(all, req.user.supplier_id, days));
+  });
   app.post("/api/supplier/products", editor, (req, res) => {
     const p = validateProduct(req.body);
     const existing = get(

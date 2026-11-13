@@ -37,10 +37,10 @@ test("storefront category filters and demo photos match the supplier workspace",
   await page.getByLabel("Пароль", { exact: true }).fill("Test-password-12345");
   await page.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
   await page.getByRole("link", { name: "Каталог", exact: true }).click();
-  await page.getByRole("button", { name: "Демокаталог витрины" }).click();
+  await page.getByRole("button", { name: "Каталог витрины" }).click();
   await page
     .getByRole("textbox", { name: "Поиск товаров" })
-    .fill(photo!.split("/").at(-1)!.replace(".jpg", ""));
+    .fill(photo!.split("/").at(-1)!.replace("demo-", "").replace(".jpg", ""));
   const adminImage = page.locator(".seller-table img");
   await expect(adminImage).toHaveAttribute("src", `${shopUrl}${photo}`);
   await expect

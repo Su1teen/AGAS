@@ -106,9 +106,7 @@ function ProductDetails({ product }: { product: Awaited<ReturnType<typeof loadPr
               className="aspect-square w-full rounded-3xl border border-border bg-white object-contain p-6 md:p-10"
             />
             <div className="self-center">
-              <p className="mb-3 text-sm font-medium text-ink-soft">
-                {tr("Демокаталог")} · {product.brand}
-              </p>
+              <p className="mb-3 text-sm font-medium text-ink-soft">{product.brand}</p>
               <h1 className="font-serif text-4xl md:text-6xl">{product.name}</h1>
               <p className="mt-4 text-lg text-ink-soft">{product.description}</p>
               <p className="mt-7 text-3xl font-semibold">{formatPrice(product.price)}</p>

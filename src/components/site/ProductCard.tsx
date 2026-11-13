@@ -43,11 +43,6 @@ export function ProductCard({
                 img.src = "/product-placeholder.svg";
             }}
           />
-          {product.demo && (
-            <span className="absolute left-2 top-2 rounded-full bg-surface px-2 py-1 text-xs text-foreground">
-              {tr("Демо")}
-            </span>
-          )}
           {!product.demo && product.isNew && (
             <span className="absolute left-2 top-2 rounded-full bg-surface px-2 py-1 text-xs text-foreground">
               {tr("Новинка")}

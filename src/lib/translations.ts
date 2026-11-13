@@ -27,8 +27,6 @@ export const english: Record<string, string> = {
   "Женская одежда": "Women's clothing",
   "Мужские футболки и поло": "Men's T-shirts and polos",
   "Худи и свитшоты": "Hoodies and sweatshirts",
-  Демо: "Demo",
-  Демокаталог: "Demo catalog",
   "Цена на момент добавления. Актуальную цену и наличие можно посмотреть у продавца.":
     "Price when listed. Check the seller for current pricing and availability.",
   "Открыть товар на Flip.kz": "View on Flip.kz",
